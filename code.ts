@@ -1,3 +1,25 @@
+/**
+ * @license MIT
+ * Copyright (c) 2024 SON OO-SUNG (spctrm404)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 figma.showUI(__html__);
 
 function degToRad(deg: number): number {
@@ -65,12 +87,8 @@ function okLChToXYZ(L: number, C: number, h: number) {
   };
 }
 
-function floatRGBToHex(r: number, g: number, b: number) {
-  function floatToHex(value: number) {
-    const hex = Math.floor(value * 255).toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  }
-  return floatToHex(r) + floatToHex(g) + floatToHex(b) + 'ff';
+function clamp(value: number): number {
+  return Math.min(Math.max(value, 0), 1);
 }
 
 figma.ui.onmessage = (msg: {
@@ -82,32 +100,45 @@ figma.ui.onmessage = (msg: {
 }) => {
   if (msg.type === 'create-rectangles') {
     const nodes: SceneNode[] = [];
-    const rect = figma.createRectangle();
-    rect.x = 0;
 
     const total = 100 / msg.lightnessStep + 1;
-    const okLChL = msg.peakLightness / 100;
-    const okLChC = msg.peakChroma / 100;
-    const okLChH = msg.hue;
-    const { X, Y, Z } = okLChToXYZ(okLChL, okLChC, okLChH);
+    const peakLightness = msg.peakLightness / 100;
+    const peakChroma = msg.peakChroma / 100;
+    const hue = msg.hue;
 
-    const { r: rawP3R, g: rawP3G, b: rawP3B } = XYZToDisplayP3(X, Y, Z);
-    const p3R = gammaCorrect(rawP3R);
-    const p3G = gammaCorrect(rawP3G);
-    const p3B = gammaCorrect(rawP3B);
+    for (let n = 0; n < total; n++) {
+      const okLChL = (n * msg.lightnessStep) / 100;
+      const okLChC =
+        okLChL == peakLightness
+          ? peakChroma
+          : okLChL < peakLightness
+          ? (peakChroma / peakLightness) * okLChL
+          : (peakChroma / (1 - peakLightness)) * (1 - okLChL);
+      const okLChH = hue;
 
-    const { r: rawsRGBR, g: rawsRGBG, b: rawsRGBB } = XYZTosRGB(X, Y, Z);
-    const sRGBR = gammaCorrect(rawsRGBR);
-    const sRGBG = gammaCorrect(rawsRGBG);
-    const sRGBB = gammaCorrect(rawsRGBB);
+      const { X, Y, Z } = okLChToXYZ(okLChL, okLChC, okLChH);
 
-    // console.log('p3', p3R, p3G, p3B);
-    // console.log('sRGB', floatRGBToHex(sRGBR, sRGBG, sRGBB));
+      const { r: rawP3R, g: rawP3G, b: rawP3B } = XYZToDisplayP3(X, Y, Z);
+      const p3R = clamp(gammaCorrect(rawP3R));
+      const p3G = clamp(gammaCorrect(rawP3G));
+      const p3B = clamp(gammaCorrect(rawP3B));
 
-    rect.fills = [{ type: 'SOLID', color: { r: p3R, g: p3G, b: p3B } }];
+      const { r: rawsRGBR, g: rawsRGBG, b: rawsRGBB } = XYZTosRGB(X, Y, Z);
+      const sRGBR = clamp(gammaCorrect(rawsRGBR));
+      const sRGBG = clamp(gammaCorrect(rawsRGBG));
+      const sRGBB = clamp(gammaCorrect(rawsRGBB));
 
-    figma.currentPage.appendChild(rect);
-    nodes.push(rect);
+      console.log('lch', okLChL, okLChC, okLChH);
+      console.log('p3', p3R, p3G, p3B);
+      // console.log('sRGB', floatRGBToHex(sRGBR, sRGBG, sRGBB));
+
+      const rect = figma.createRectangle();
+      rect.x = 150 * n;
+      rect.fills = [{ type: 'SOLID', color: { r: p3R, g: p3G, b: p3B } }];
+      figma.currentPage.appendChild(rect);
+      nodes.push(rect);
+    }
+
     figma.currentPage.selection = nodes;
     figma.viewport.scrollAndZoomIntoView(nodes);
   }
