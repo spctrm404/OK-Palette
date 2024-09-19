@@ -77,7 +77,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 </div>
 
 <button id="create">Create</button>
-<button id="cancel">Cancel</button>
 <script>
   document.getElementById('create').onclick = () => {
     const domLightnessStep = document.querySelector(
@@ -97,7 +96,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     parent.postMessage(
       {
         pluginMessage: {
-          type: 'create-rectangles',
+          type: 'create-palette',
           lightnessStep,
           peakLightness,
           peakChroma,
@@ -106,9 +105,5 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       },
       '*'
     );
-  };
-
-  document.getElementById('cancel').onclick = () => {
-    parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
   };
 </script>

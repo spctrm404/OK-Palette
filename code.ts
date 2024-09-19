@@ -20,7 +20,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-figma.showUI(__html__);
+const palettePaddingX = 32;
+const palettePaddingY = 32;
+const paletteGapX = 24;
+const paletteGapY = 24;
+const swatchWidth = 200;
+const swatchheight = 200;
 
 function degToRad(deg: number): number {
   return (deg * Math.PI) / 180;
@@ -51,7 +56,7 @@ function okLabToXYZ(L: number, a: number, b: number) {
 }
 
 // 3-1. CIEXYZ -> Display-P3 변환
-function XYZToDisplayP3(X: number, Y: number, Z: number) {
+function XYZToP3(X: number, Y: number, Z: number) {
   const r =
     2.493496911941425 * X - 0.9313836179191239 * Y - 0.40271078445071684 * Z;
   const g =
@@ -62,7 +67,7 @@ function XYZToDisplayP3(X: number, Y: number, Z: number) {
 }
 
 // 3-2. CIEXYZ -> sRGB 변환
-function XYZTosRGB(X: number, Y: number, Z: number) {
+function XYZToSRGB(X: number, Y: number, Z: number) {
   const r = 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
   const g = -0.969266 * X + 1.8760108 * Y + 0.041556 * Z;
   const b = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
@@ -87,61 +92,198 @@ function okLChToXYZ(L: number, C: number, h: number) {
   };
 }
 
+function normalizedRGBToHex(r: number, g: number, b: number) {
+  function normalizedValueToHex(value: number) {
+    const hex = Math.round(value * 255)
+      .toString(16)
+      .toUpperCase();
+    return hex.length === 1 ? '0' + hex : hex;
+  }
+  return (
+    normalizedValueToHex(r) + normalizedValueToHex(g) + normalizedValueToHex(b)
+  );
+}
+
+function roundToNDecimals(value: number, n: number) {
+  return parseFloat(value.toFixed(n));
+}
+
 function clamp(value: number): number {
   return Math.min(Math.max(value, 0), 1);
 }
 
-figma.ui.onmessage = (msg: {
+let isFontLoaded = false;
+
+async function ensureFontLoaded() {
+  if (!isFontLoaded) {
+    await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+    isFontLoaded = true;
+  }
+}
+
+figma.showUI(__html__);
+
+figma.ui.onmessage = async (msg: {
   type: string;
   lightnessStep: number;
   peakLightness: number;
   peakChroma: number;
   hue: number;
 }) => {
-  if (msg.type === 'create-rectangles') {
-    const nodes: SceneNode[] = [];
+  if (msg.type === 'create-palette') {
+    await ensureFontLoaded();
 
     const total = 100 / msg.lightnessStep + 1;
     const peakLightness = msg.peakLightness / 100;
     const peakChroma = msg.peakChroma / 100;
     const hue = msg.hue;
 
+    const { x: centerX, y: centerY } = figma.viewport.center;
+    const nodes: SceneNode[] = [];
+    const paletteFrame = figma.createFrame();
+    paletteFrame.name = 'ok-palette';
+    paletteFrame.x = centerX;
+    paletteFrame.y = centerY;
     for (let n = 0; n < total; n++) {
       const okLChL = (n * msg.lightnessStep) / 100;
       const okLChC =
-        okLChL == peakLightness
+        okLChL === peakLightness
           ? peakChroma
           : okLChL < peakLightness
-          ? (peakChroma / peakLightness) * okLChL
-          : (peakChroma / (1 - peakLightness)) * (1 - okLChL);
+          ? roundToNDecimals((peakChroma / peakLightness) * okLChL, 3)
+          : roundToNDecimals(
+              (peakChroma / (1 - peakLightness)) * (1 - okLChL),
+              3
+            );
       const okLChH = hue;
 
       const { X, Y, Z } = okLChToXYZ(okLChL, okLChC, okLChH);
 
-      const { r: rawP3R, g: rawP3G, b: rawP3B } = XYZToDisplayP3(X, Y, Z);
-      const p3R = clamp(gammaCorrect(rawP3R));
-      const p3G = clamp(gammaCorrect(rawP3G));
-      const p3B = clamp(gammaCorrect(rawP3B));
+      const { r: rawP3R, g: rawP3G, b: rawP3B } = XYZToP3(X, Y, Z);
+      const unClamppedP3R = gammaCorrect(rawP3R);
+      const unClamppedP3G = gammaCorrect(rawP3G);
+      const unClamppedP3B = gammaCorrect(rawP3B);
+      const p3R = clamp(unClamppedP3R);
+      const p3G = clamp(unClamppedP3G);
+      const p3B = clamp(unClamppedP3B);
 
-      const { r: rawsRGBR, g: rawsRGBG, b: rawsRGBB } = XYZTosRGB(X, Y, Z);
-      const sRGBR = clamp(gammaCorrect(rawsRGBR));
-      const sRGBG = clamp(gammaCorrect(rawsRGBG));
-      const sRGBB = clamp(gammaCorrect(rawsRGBB));
+      const { r: rawSRGBR, g: rawSRGBG, b: rawSRGBB } = XYZToSRGB(X, Y, Z);
+      const unClamppedSRGBR = gammaCorrect(rawSRGBR);
+      const unClamppedSRGBG = gammaCorrect(rawSRGBG);
+      const unClamppedSRGBB = gammaCorrect(rawSRGBB);
+      const sRGBR = clamp(unClamppedSRGBR);
+      const sRGBG = clamp(unClamppedSRGBG);
+      const sRGBB = clamp(unClamppedSRGBB);
 
-      console.log('lch', okLChL, okLChC, okLChH);
-      console.log('p3', p3R, p3G, p3B);
-      // console.log('sRGB', floatRGBToHex(sRGBR, sRGBG, sRGBB));
+      const isP3 =
+        okLChC === 0 ||
+        (unClamppedP3R <= 1 && unClamppedP3G <= 1 && unClamppedP3B <= 1);
+      const isSRGB =
+        okLChC === 0 ||
+        (unClamppedSRGBR <= 1 && unClamppedSRGBG <= 1 && unClamppedSRGBB <= 1);
 
-      const rect = figma.createRectangle();
-      rect.x = 150 * n;
-      rect.fills = [{ type: 'SOLID', color: { r: p3R, g: p3G, b: p3B } }];
-      figma.currentPage.appendChild(rect);
-      nodes.push(rect);
+      // console.log('lch', okLChL, okLChC, okLChH);
+      // console.log('p3', p3R, p3G, p3B);
+      // console.log('isP3', isP3);
+      // console.log('isSRGB', isSRGB);
+
+      const swatchFrame = figma.createFrame();
+      swatchFrame.name = `swatch-${n * msg.lightnessStep}`;
+      swatchFrame.x = palettePaddingX + n * (swatchWidth + paletteGapX);
+      swatchFrame.y = palettePaddingY;
+      swatchFrame.resize(swatchWidth, swatchheight);
+      swatchFrame.fills = [
+        { type: 'SOLID', color: { r: p3R, g: p3G, b: p3B } },
+      ];
+
+      const textFrame = figma.createFrame();
+      textFrame.name = 'info';
+      textFrame.fills = [];
+      textFrame.layoutMode = 'VERTICAL';
+      textFrame.layoutSizingHorizontal = 'HUG';
+
+      const lightnessText = figma.createText();
+      lightnessText.name = 'lightness';
+      lightnessText.characters = `${n * msg.lightnessStep}`;
+      lightnessText.fills = [
+        {
+          type: 'SOLID',
+          color: okLChL < 0.7 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 },
+        },
+      ];
+      textFrame.appendChild(lightnessText);
+
+      const okLChText = figma.createText();
+      okLChText.name = 'oklch';
+      okLChText.characters = `oklch(${okLChL} ${okLChC} ${okLChL})`;
+      okLChText.fills = [
+        {
+          type: 'SOLID',
+          color: okLChL < 0.7 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 },
+        },
+      ];
+      textFrame.appendChild(okLChText);
+
+      const p3RGBText = figma.createText();
+      p3RGBText.name = 'p3-rgb';
+      p3RGBText.characters = `color(display-p3 
+  ${roundToNDecimals(p3R, 6)}
+  ${roundToNDecimals(p3G, 6)}
+  ${roundToNDecimals(p3B, 6)}
+)`;
+      p3RGBText.fills = [
+        {
+          type: 'SOLID',
+          color: okLChL < 0.7 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 },
+        },
+      ];
+      textFrame.appendChild(p3RGBText);
+
+      const sRGBHexText = figma.createText();
+      sRGBHexText.name = 'srgb-hex';
+      sRGBHexText.characters = `sRGB: #${normalizedRGBToHex(
+        sRGBR,
+        sRGBG,
+        sRGBB
+      )}`;
+      sRGBHexText.fills = [
+        {
+          type: 'SOLID',
+          color: okLChL < 0.7 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 },
+        },
+      ];
+      textFrame.appendChild(sRGBHexText);
+
+      const p3HexText = figma.createText();
+      p3HexText.name = 'p3-hex';
+      p3HexText.characters = `P3: #${normalizedRGBToHex(p3R, p3G, p3B)}`;
+      p3HexText.fills = [
+        {
+          type: 'SOLID',
+          color: okLChL < 0.7 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 },
+        },
+      ];
+      textFrame.appendChild(p3HexText);
+
+      const gamutText = figma.createText();
+      gamutText.name = 'gamut';
+      gamutText.characters = isSRGB ? 'sRGB' : isP3 ? 'P3' : 'Rec2020';
+      gamutText.fills = [
+        {
+          type: 'SOLID',
+          color: okLChL < 0.7 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 },
+        },
+      ];
+      textFrame.appendChild(gamutText);
+
+      swatchFrame.appendChild(textFrame);
+      paletteFrame.appendChild(swatchFrame);
     }
-
-    figma.currentPage.selection = nodes;
-    figma.viewport.scrollAndZoomIntoView(nodes);
+    paletteFrame.resize(
+      2 * palettePaddingX + total * swatchWidth + (total - 1) * paletteGapX,
+      2 * palettePaddingY + swatchheight
+    );
+    figma.currentPage.appendChild(paletteFrame);
+    nodes.push(paletteFrame);
   }
-
-  figma.closePlugin();
 };
