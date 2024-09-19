@@ -1,0 +1,94 @@
+<h2>OK-Palette</h2>
+<p>Create a UI palette using the perceptually uniform color space, OKLCH.</p>
+
+<fieldset>
+  <legend>Lightness Step</legend>
+  <div>
+    <input type="radio" id="lightness-step-1" name="lightness-step" value="1" />
+    <label for="lightness-step-1">1</label>
+  </div>
+  <div>
+    <input type="radio" id="lightness-step-2" name="lightness-step" value="2" />
+    <label for="lightness-step-2">2</label>
+  </div>
+  <div>
+    <input type="radio" id="lightness-step-5" name="lightness-step" value="5" />
+    <label for="lightness-step-5">5</label>
+  </div>
+  <div>
+    <input
+      type="radio"
+      id="lightness-step-10"
+      name="lightness-step"
+      value="10"
+      checked
+    />
+    <label for="lightness-step-10">10</label>
+  </div>
+</fieldset>
+
+<div>
+  <label for="peak-lightness">Peak Lightness</label>
+  <input
+    id="peak-lightness"
+    type="number"
+    min="0"
+    max="100"
+    step="1"
+    value="50"
+  />
+</div>
+
+<div>
+  <label for="peak-chroma">Peak Chroma</label>
+  <input
+    id="peak-chroma"
+    type="number"
+    min="0"
+    max="40"
+    step="0.1"
+    value="11"
+  />
+</div>
+
+<div>
+  <label for="hue">Hue</label>
+  <input id="hue" type="number" min="0" max="360" step="1" value="260" />
+</div>
+
+<button id="create">Create</button>
+<button id="cancel">Cancel</button>
+<script>
+  document.getElementById('create').onclick = () => {
+    const domLightnessStep = document.querySelector(
+      'input[name="lightness-step"]:checked'
+    );
+    const lightnessStep = parseInt(domLightnessStep.value);
+    const domPeakLightness = document.getElementById('peak-lightness');
+    const peakLightness = parseInt(domPeakLightness.value);
+    const domPeakChroma = document.getElementById('peak-chroma');
+    const peakChroma = parseFloat(domPeakChroma.value);
+    const domHue = document.getElementById('hue');
+    const hue = parseInt(domHue.value);
+    console.log('lightnessStep', lightnessStep);
+    console.log('peakLightness', peakLightness);
+    console.log('peakChroma', peakChroma);
+    console.log('hue', hue);
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: 'create-rectangles',
+          lightnessStep,
+          peakLightness,
+          peakChroma,
+          hue,
+        },
+      },
+      '*'
+    );
+  };
+
+  document.getElementById('cancel').onclick = () => {
+    parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+  };
+</script>
