@@ -20,115 +20,114 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const palettePaddingX = 32;
-const palettePaddingY = 32;
-const paletteGapX = 24;
-const paletteGapY = 24;
-const swatchWidth = 200;
-const swatchheight = 200;
+const PALETTE_PX = 48;
+const PALETTE_PY = 48;
+const PALETTE_GX = 24;
+const PALETTE_GY = 24;
+const SWATCH_W = 200;
+const SWATCH_H = 200;
+const INFO_PX = 16;
+const INFO_PY = 16;
+const INFO_GY = 4;
+const INFO_FONTSIZE = 12;
+const INFO_LINEHEIGHT = 16;
+const IDX_FONTSIZE = 56;
+const IDX_OFFSET_X = 16;
+const IDX_OFFSET_Y = 16;
 
-const degToRad = (deg: number): number => {
+const degToRad = (deg: number) => {
   return (deg * Math.PI) / 180;
 };
 
-// 1. OKLCH -> OKLab 변환
-const okLChToOkLab = (
-  L: number,
-  C: number,
-  h: number
-): { L: number; a: number; b: number } => {
-  const oklabA = Math.cos(degToRad(h)) * C;
-  const oklabB = Math.sin(degToRad(h)) * C;
-  return { L: L, a: oklabA, b: oklabB };
+// 1. okLCh -> okLab 변환
+const okLChToOkLab = ({ L, C, h }: { L: number; C: number; h: number }) => ({
+  L,
+  a: Math.cos(degToRad(h)) * C,
+  b: Math.sin(degToRad(h)) * C,
+});
+
+// 2. okLab -> CIEXYZ 변환 (D65 기준)
+const okLabToXYZ = (Lab: { L: number; a: number; b: number }) => {
+  const okLabToLMS = ({ L, a, b }: { L: number; a: number; b: number }) => ({
+    L: (L + 0.3963377774 * a + 0.2158037573 * b) ** 3,
+    M: (L - 0.1055613458 * a - 0.0638541728 * b) ** 3,
+    S: (L - 0.0894841775 * a - 1.291485548 * b) ** 3,
+  });
+
+  const LMS = okLabToLMS(Lab);
+
+  return {
+    X: 1.2270138511 * LMS.L - 0.5577999807 * LMS.M + 0.2812561489 * LMS.S,
+    Y: -0.0405801784 * LMS.L + 1.1122568696 * LMS.M - 0.0716766787 * LMS.S,
+    Z: -0.0763812845 * LMS.L - 0.4214819784 * LMS.M + 1.5861632204 * LMS.S,
+  };
 };
 
-// 2. OKLab -> CIEXYZ 변환 (D65 기준)
-const okLabToXYZ = (
-  L: number,
-  a: number,
-  b: number
-): { X: number; Y: number; Z: number } => {
-  let lmsL = L + 0.3963377774 * a + 0.2158037573 * b;
-  let lmsM = L - 0.1055613458 * a - 0.0638541728 * b;
-  let lmsS = L - 0.0894841775 * a - 1.291485548 * b;
+const XYZToRGB = (
+  matrix: number[][],
+  { X, Y, Z }: { X: number; Y: number; Z: number }
+) => ({
+  r: matrix[0][0] * X + matrix[0][1] * Y + matrix[0][2] * Z,
+  g: matrix[1][0] * X + matrix[1][1] * Y + matrix[1][2] * Z,
+  b: matrix[2][0] * X + matrix[2][1] * Y + matrix[2][2] * Z,
+});
 
-  lmsL = lmsL ** 3;
-  lmsM = lmsM ** 3;
-  lmsS = lmsS ** 3;
+// 3-1. CIEXYZ -> sRGB 변환
+const XYZToSRGB = (XYZ: { X: number; Y: number; Z: number }) =>
+  XYZToRGB(
+    [
+      [3.2404542, -1.5371385, -0.4985314],
+      [-0.969266, 1.8760108, 0.041556],
+      [0.0556434, -0.2040259, 1.0572252],
+    ],
+    XYZ
+  );
 
-  const X = 1.2270138511 * lmsL - 0.5577999807 * lmsM + 0.2812561489 * lmsS;
-  const Y = -0.0405801784 * lmsL + 1.1122568696 * lmsM - 0.0716766787 * lmsS;
-  const Z = -0.0763812845 * lmsL - 0.4214819784 * lmsM + 1.5861632204 * lmsS;
-
-  return { X, Y, Z };
-};
-
-// 3-1. CIEXYZ -> Display-P3 변환
-const XYZToP3 = (
-  X: number,
-  Y: number,
-  Z: number
-): { r: number; g: number; b: number } => {
-  const r =
-    2.493496911941425 * X - 0.9313836179191239 * Y - 0.40271078445071684 * Z;
-  const g =
-    -0.8294889695615747 * X + 1.7626640603183463 * Y + 0.023624685841943577 * Z;
-  const b =
-    0.0358458302437845 * X - 0.0763812845057069 * Y + 0.9570942811736457 * Z;
-  return { r, g, b };
-};
-
-// 3-2. CIEXYZ -> sRGB 변환
-const XYZToSRGB = (
-  X: number,
-  Y: number,
-  Z: number
-): { r: number; g: number; b: number } => {
-  const r = 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
-  const g = -0.969266 * X + 1.8760108 * Y + 0.041556 * Z;
-  const b = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
-  return { r, g, b };
-};
+// 3-2. CIEXYZ -> Display-P3 변환
+const XYZToDisplayP3 = (XYZ: { X: number; Y: number; Z: number }) =>
+  XYZToRGB(
+    [
+      [2.493496911941425, -0.9313836179191239, -0.40271078445071684],
+      [-0.8294889695615747, 1.7626640603183463, 0.023624685841943577],
+      [0.0358458302437845, -0.0763812845057069, 0.9570942811736457],
+    ],
+    XYZ
+  );
 
 // 4. 감마 보정 (sRGB 커브 사용)
-const gammaCorrect = (value: number): number => {
+const gammaCorrect = (value: number) => {
   return value <= 0.0031308
     ? 12.92 * value
     : 1.055 * Math.pow(value, 1 / 2.4) - 0.055;
 };
 
 // 5. 공통절차 함수: OKLCH -> XYZ
-const okLChToXYZ = (
-  L: number,
-  C: number,
-  h: number
-): { X: number; Y: number; Z: number } => {
-  const { L: oklabL, a: oklabA, b: oklabB } = okLChToOkLab(L, C, h);
-  const { X, Y, Z } = okLabToXYZ(oklabL, oklabA, oklabB);
-  return {
-    X,
-    Y,
-    Z,
-  };
-};
+const okLChToXYZ = (LCh: { L: number; C: number; h: number }) =>
+  okLabToXYZ(okLChToOkLab(LCh));
 
-const normalizedRGBToHex = (r: number, g: number, b: number): string => {
-  const normalizedValueToHex = (value: number): string => {
-    const hex = Math.round(value * 255)
-      .toString(16)
-      .toUpperCase();
-    return hex.length === 1 ? '0' + hex : hex;
-  };
-  return (
-    normalizedValueToHex(r) + normalizedValueToHex(g) + normalizedValueToHex(b)
-  );
-};
+const normalizedRGBToHex = ({
+  r,
+  g,
+  b,
+}: {
+  r: number;
+  g: number;
+  b: number;
+}): string =>
+  [r, g, b]
+    .map((value) =>
+      Math.round(value * 255)
+        .toString(16)
+        .padStart(2, '0')
+        .toUpperCase()
+    )
+    .join('');
 
-const roundToNDecimals = (value: number, n: number): number => {
+const roundToNDecimals = (value: number, n: number) => {
   return parseFloat(value.toFixed(n));
 };
 
-const clamp = (value: number): number => {
+const clamp = (value: number) => {
   return Math.min(Math.max(value, 0), 1);
 };
 
@@ -137,65 +136,64 @@ const createPalette = (
   preNormalizedPeakLightness: number,
   preNormalizedPeakChroma: number,
   hue: number
-): {
-  oklch: { l: number; c: number; h: number };
-  sRGB: { r: number; g: number; b: number };
-  p3: { r: number; g: number; b: number };
-  gamut: string;
-}[] => {
+) => {
   const total = 100 / lightnessStep + 1;
   const peakLightness = preNormalizedPeakLightness / 100;
   const peakChroma = preNormalizedPeakChroma / 100;
 
   const palette: {
-    oklch: { l: number; c: number; h: number };
+    okLCh: { L: number; C: number; h: number };
     sRGB: { r: number; g: number; b: number };
-    p3: { r: number; g: number; b: number };
+    displayP3: { r: number; g: number; b: number };
     gamut: string;
   }[] = [];
 
   for (let n = 0; n < total; n++) {
-    const okLChL = (n * lightnessStep) / 100;
-    const okLChC =
-      okLChL === peakLightness
+    const lightness = (n * lightnessStep) / 100;
+    const chroma =
+      lightness === peakLightness
         ? peakChroma
-        : okLChL < peakLightness
-        ? roundToNDecimals((peakChroma / peakLightness) * okLChL, 3)
+        : lightness < peakLightness
+        ? roundToNDecimals((peakChroma / peakLightness) * lightness, 3)
         : roundToNDecimals(
-            (peakChroma / (1 - peakLightness)) * (1 - okLChL),
+            (peakChroma / (1 - peakLightness)) * (1 - lightness),
             3
           );
-    const okLChH = hue;
+    const okLCh = { L: lightness, C: chroma, h: hue };
 
-    const { X, Y, Z } = okLChToXYZ(okLChL, okLChC, okLChH);
+    const XYZ = okLChToXYZ(okLCh);
 
-    const { r: rawSRGBR, g: rawSRGBG, b: rawSRGBB } = XYZToSRGB(X, Y, Z);
-    const unClamppedSRGBR = gammaCorrect(rawSRGBR);
-    const unClamppedSRGBG = gammaCorrect(rawSRGBG);
-    const unClamppedSRGBB = gammaCorrect(rawSRGBB);
-    const sRGBR = clamp(unClamppedSRGBR);
-    const sRGBG = clamp(unClamppedSRGBG);
-    const sRGBB = clamp(unClamppedSRGBB);
-    const isSRGB =
-      okLChC === 0 ||
-      (unClamppedSRGBR <= 1 && unClamppedSRGBG <= 1 && unClamppedSRGBB <= 1);
+    const linearSRGB = XYZToSRGB(XYZ);
+    const sRGB = Object.fromEntries(
+      Object.entries(linearSRGB).map(([key, value]) => [
+        key,
+        gammaCorrect(value),
+      ])
+    ) as { r: number; g: number; b: number };
+    const clampedSRGB = Object.fromEntries(
+      Object.entries(linearSRGB).map(([key, value]) => [key, clamp(value)])
+    ) as { r: number; g: number; b: number };
+    const isSRGB = chroma === 0 || (sRGB.r <= 1 && sRGB.g <= 1 && sRGB.b <= 1);
 
-    const { r: rawP3R, g: rawP3G, b: rawP3B } = XYZToP3(X, Y, Z);
-    const unClamppedP3R = gammaCorrect(rawP3R);
-    const unClamppedP3G = gammaCorrect(rawP3G);
-    const unClamppedP3B = gammaCorrect(rawP3B);
-    const p3R = clamp(unClamppedP3R);
-    const p3G = clamp(unClamppedP3G);
-    const p3B = clamp(unClamppedP3B);
-    const isP3 =
-      okLChC === 0 ||
-      (unClamppedP3R <= 1 && unClamppedP3G <= 1 && unClamppedP3B <= 1);
+    const linearDisplayP3 = XYZToDisplayP3(XYZ);
+    const displayP3 = Object.fromEntries(
+      Object.entries(linearDisplayP3).map(([key, value]) => [
+        key,
+        gammaCorrect(value),
+      ])
+    ) as { r: number; g: number; b: number };
+    const clampedDisplayP3 = Object.fromEntries(
+      Object.entries(displayP3).map(([key, value]) => [key, clamp(value)])
+    ) as { r: number; g: number; b: number };
+    const isDisplayP3 =
+      chroma === 0 ||
+      (displayP3.r <= 1 && displayP3.g <= 1 && displayP3.b <= 1);
 
     palette.push({
-      oklch: { l: okLChL, c: okLChC, h: okLChH },
-      sRGB: { r: sRGBR, g: sRGBG, b: sRGBB },
-      p3: { r: p3R, g: p3G, b: p3B },
-      gamut: isSRGB ? 'sRGB' : isP3 ? 'P3' : 'Rec2020',
+      okLCh: okLCh,
+      sRGB: clampedSRGB,
+      displayP3: clampedDisplayP3,
+      gamut: isSRGB ? 'sRGB' : isDisplayP3 ? 'P3' : 'Rec2020',
     });
   }
 
@@ -204,12 +202,13 @@ const createPalette = (
 
 let isFontLoaded = false;
 
-async function ensureFontLoaded() {
+const ensureFontLoaded = async () => {
   if (!isFontLoaded) {
-    await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+    await figma.loadFontAsync({ family: 'Martian Mono', style: 'Regular' });
+    await figma.loadFontAsync({ family: 'Martian Mono', style: 'Bold' });
     isFontLoaded = true;
   }
-}
+};
 
 figma.showUI(__html__);
 
@@ -232,83 +231,89 @@ figma.ui.onmessage = async (msg: {
 
     const nodes: SceneNode[] = [];
     const paletteFrame = figma.createFrame();
-    paletteFrame.name = `ok-palette-step${msg.lightnessStep}-l${msg.peakLightness}-c${msg.peakChroma}-h${msg.hue}`;
+    paletteFrame.name = `OKP-step${msg.lightnessStep}-l${msg.peakLightness}-c${msg.peakChroma}-h${msg.hue}`;
     const { x: centerX, y: centerY } = figma.viewport.center;
     paletteFrame.x = centerX;
     paletteFrame.y = centerY;
+    paletteFrame.resize(
+      2 * PALETTE_PX +
+        palette.length * SWATCH_W +
+        (palette.length - 1) * PALETTE_GX,
+      2 * PALETTE_PY + SWATCH_H
+    );
     paletteFrame.fills = [
       {
         type: 'SOLID',
-        color: { r: 0.5, g: 0.5, b: 0.5 },
+        color: { r: 1, g: 1, b: 1 },
       },
     ];
 
     palette.forEach((aPalette, idx) => {
-      const oklch = aPalette.oklch;
-      const sRGB = aPalette.sRGB;
-      const p3 = aPalette.p3;
-      const gamut = aPalette.gamut;
-
       const swatchFrame = figma.createFrame();
-      swatchFrame.name = `swatch-${idx * msg.lightnessStep}`;
-      swatchFrame.x = palettePaddingX + idx * (swatchWidth + paletteGapX);
-      swatchFrame.y = palettePaddingY;
-      swatchFrame.resize(swatchWidth, swatchheight);
-      swatchFrame.fills = [{ type: 'SOLID', color: p3 }];
+      paletteFrame.appendChild(swatchFrame);
+      swatchFrame.name = `Swatch-${idx * msg.lightnessStep}`;
+      swatchFrame.layoutMode = 'VERTICAL';
+      swatchFrame.layoutSizingHorizontal = 'FIXED';
+      swatchFrame.layoutSizingVertical = 'FIXED';
+      swatchFrame.x = PALETTE_PX + idx * (SWATCH_W + PALETTE_GX);
+      swatchFrame.y = PALETTE_PY;
+      swatchFrame.resize(SWATCH_W, SWATCH_H);
+      swatchFrame.fills = [{ type: 'SOLID', color: aPalette.displayP3 }];
 
-      const textFrame = figma.createFrame();
-      textFrame.name = 'info';
-      textFrame.fills = [];
-      textFrame.layoutMode = 'VERTICAL';
-      textFrame.layoutSizingHorizontal = 'HUG';
-      textFrame.itemSpacing = 4;
+      const infoFrame = figma.createFrame();
+      swatchFrame.appendChild(infoFrame);
+      infoFrame.name = 'info';
+      infoFrame.layoutMode = 'VERTICAL';
+      infoFrame.layoutSizingHorizontal = 'FILL';
+      infoFrame.layoutSizingVertical = 'FILL';
+      infoFrame.paddingTop = INFO_PY;
+      infoFrame.paddingBottom = INFO_PY;
+      infoFrame.paddingLeft = INFO_PX;
+      infoFrame.paddingRight = INFO_PX;
+      infoFrame.itemSpacing = INFO_GY;
+      infoFrame.fills = [];
 
       const lightnessText = figma.createText();
-      lightnessText.name = 'lightness';
+      swatchFrame.appendChild(lightnessText);
+      lightnessText.name = '#';
+      lightnessText.fontName = { family: 'Martian Mono', style: 'Bold' };
+      lightnessText.fontSize = IDX_FONTSIZE;
+      lightnessText.lineHeight = { value: IDX_FONTSIZE, unit: 'PIXELS' };
       lightnessText.characters = `${idx * msg.lightnessStep}`;
-      textFrame.appendChild(lightnessText);
+      lightnessText.layoutPositioning = 'ABSOLUTE';
+      lightnessText.x = SWATCH_W - lightnessText.width + IDX_OFFSET_X;
+      lightnessText.y = SWATCH_H - lightnessText.height + IDX_OFFSET_Y;
+      lightnessText.fills = [
+        {
+          type: 'SOLID',
+          color:
+            idx < palette.length / 2
+              ? { r: 1, g: 1, b: 1 }
+              : { r: 0, g: 0, b: 0 },
+        },
+      ];
 
       const okLChText = figma.createText();
-      okLChText.name = 'oklch';
-      okLChText.characters = `oklch(${oklch.l} ${oklch.c} ${oklch.h})`;
-      textFrame.appendChild(okLChText);
-
+      infoFrame.appendChild(okLChText);
       const p3RGBText = figma.createText();
-      p3RGBText.name = 'p3-rgb';
-      p3RGBText.characters = `color(display-p3 
-  ${roundToNDecimals(p3.r, 6)}
-  ${roundToNDecimals(p3.g, 6)}
-  ${roundToNDecimals(p3.b, 6)}
-)`;
-      textFrame.appendChild(p3RGBText);
-
+      infoFrame.appendChild(p3RGBText);
       const sRGBHexText = figma.createText();
-      sRGBHexText.name = 'srgb-hex';
-      sRGBHexText.characters = `sRGB: #${normalizedRGBToHex(
-        sRGB.r,
-        sRGB.g,
-        sRGB.b
-      )}`;
-      textFrame.appendChild(sRGBHexText);
-
+      infoFrame.appendChild(sRGBHexText);
       const p3HexText = figma.createText();
-      p3HexText.name = 'p3-hex';
-      p3HexText.characters = `P3: #${normalizedRGBToHex(p3.r, p3.g, p3.b)}`;
-      textFrame.appendChild(p3HexText);
-
+      infoFrame.appendChild(p3HexText);
       const gamutText = figma.createText();
-      gamutText.name = 'gamut';
-      gamutText.characters = gamut;
-      textFrame.appendChild(gamutText);
+      infoFrame.appendChild(gamutText);
 
-      textFrame.children.forEach((child) => {
+      infoFrame.children.forEach((child) => {
         if (child.type === 'TEXT') {
           const textNode = child as TextNode;
+          textNode.fontName = { family: 'Martian Mono', style: 'Regular' };
+          textNode.fontSize = INFO_FONTSIZE;
+          textNode.lineHeight = { value: INFO_LINEHEIGHT, unit: 'PIXELS' };
           textNode.fills = [
             {
               type: 'SOLID',
               color:
-                // palette[(idx + 50 / msg.lightnessStep) % palette.length].p3,
                 idx < palette.length / 2
                   ? { r: 1, g: 1, b: 1 }
                   : { r: 0, g: 0, b: 0 },
@@ -317,16 +322,27 @@ figma.ui.onmessage = async (msg: {
         }
       });
 
-      swatchFrame.appendChild(textFrame);
-      paletteFrame.appendChild(swatchFrame);
+      okLChText.name = 'oklch';
+      okLChText.characters = `oklch(${aPalette.okLCh.L} ${aPalette.okLCh.C} ${aPalette.okLCh.h})`;
+
+      p3RGBText.name = 'displayP3-rgb';
+      p3RGBText.fontName = { family: 'Martian Mono', style: 'Regular' };
+      p3RGBText.characters = `color(display-p3
+  ${roundToNDecimals(aPalette.displayP3.r, 6)}
+  ${roundToNDecimals(aPalette.displayP3.g, 6)}
+  ${roundToNDecimals(aPalette.displayP3.b, 6)}
+)`;
+
+      sRGBHexText.name = 'sRGB-hex';
+      sRGBHexText.characters = `sRGB: #${normalizedRGBToHex(aPalette.sRGB)}`;
+
+      p3HexText.name = 'displayP3-hex';
+      p3HexText.characters = `P3:   #${normalizedRGBToHex(aPalette.displayP3)}`;
+
+      gamutText.name = 'gamut';
+      gamutText.characters = aPalette.gamut;
     });
 
-    paletteFrame.resize(
-      2 * palettePaddingX +
-        palette.length * swatchWidth +
-        (palette.length - 1) * paletteGapX,
-      2 * palettePaddingY + swatchheight
-    );
     figma.currentPage.appendChild(paletteFrame);
     nodes.push(paletteFrame);
   }
