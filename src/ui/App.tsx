@@ -1,6 +1,10 @@
 import ReactDOM from 'react-dom/client';
+import ThemeProvider, { ThemeContext } from './context/ThemeContext';
+import { useContext } from 'react';
 
 function App() {
+  const { theme, toggleTheme, updateHues, syncHues } = useContext(ThemeContext);
+
   const sendMsg = () => {
     const lightnessStep = 10;
     const peakLightness = 50;
@@ -108,4 +112,6 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')!).render(   <ThemeProvider>
+  <App />
+</ThemeProvider>);

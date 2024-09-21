@@ -79,6 +79,12 @@ const gammaCorrect = (value: number) => {
     : 1.055 * Math.pow(value, 1 / 2.4) - 0.055;
 };
 
+const gammaCorrectRGB = (linearRGB: { r: number; g: number; b: number }) => {
+  return Object.fromEntries(
+    Object.entries(linearRGB).map(([key, value]) => [key, clamp(value)])
+  ) as { r: number; g: number; b: number };
+};
+
 // 5. 공통절차 함수: OKLCH -> XYZ
 const okLChToXYZ = (LCh: { L: number; C: number; h: number }) =>
   okLabToXYZ(okLChToOkLab(LCh));
@@ -132,11 +138,11 @@ const createPalette = (
       lightness === peakLightness
         ? peakChroma
         : lightness < peakLightness
-          ? roundToNDecimals((peakChroma / peakLightness) * lightness, 3)
-          : roundToNDecimals(
-              (peakChroma / (1 - peakLightness)) * (1 - lightness),
-              3
-            );
+        ? roundToNDecimals((peakChroma / peakLightness) * lightness, 3)
+        : roundToNDecimals(
+            (peakChroma / (1 - peakLightness)) * (1 - lightness),
+            3
+          );
     const okLCh = { L: lightness, C: chroma, h: hue };
 
     const XYZ = okLChToXYZ(okLCh);
