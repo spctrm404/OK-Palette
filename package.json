@@ -1,44 +1,42 @@
 {
-  "name": "OK-Palette",
-  "version": "0.1.0",
-  "description": "OK-Palette is a Figma plugin that generates palettes needed for GUIs using the perceptually uniform Oklch color space, ranging from black to white.",
-  "main": "code.js",
+  "name": "okpalette",
+  "version": "0.2.0",
+  "description": "A Figma plugin that generates tonal palettes based on the okLCh color space.",
+  "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "lint": "eslint --ext .ts,.tsx --ignore-pattern node_modules .",
-    "lint:fix": "eslint --ext .ts,.tsx --ignore-pattern node_modules --fix .",
-    "watch": "npm run build -- --watch"
+    "build-backend": "vite build --config vite-backend.config.ts",
+    "build-ui": "vite build --config vite-ui.config.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spctrm404/okpalette.git"
+  },
+  "keywords": [
+    "oklch"
+  ],
   "author": "SON OO-SUNG (spctrm404)",
   "license": "MIT",
-  "devDependencies": {
-    "@figma/eslint-plugin-figma-plugins": "*",
-    "@figma/plugin-typings": "^1.100.2",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
-    "eslint": "^8.54.0",
-    "typescript": "^5.3.2"
+  "bugs": {
+    "url": "https://github.com/spctrm404/okpalette/issues"
   },
-  "eslintConfig": {
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:@figma/figma-plugins/recommended"
-    ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": "./tsconfig.json"
-    },
-    "root": true,
-    "rules": {
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_",
-          "caughtErrorsIgnorePattern": "^_"
-        }
-      ]
-    }
+  "homepage": "https://github.com/spctrm404/okpalette#readme",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.100.2",
+    "@types/node": "^22.5.5",
+    "@types/react": "^18.3.8",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^9.11.0",
+    "eslint-plugin-react": "^7.36.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.7",
+    "vite-plugin-singlefile": "^2.0.2"
   }
 }
