@@ -2,7 +2,7 @@ export const degToRad = (deg: number): number => {
   return (deg * Math.PI) / 180;
 };
 
-export const roundToStep = (num: number, step: number): number => {
+export const quantize = (num: number, step: number): number => {
   const floatLength = (step.toString().split('.')[1] || '').length;
   let quantizedValue = Math.round(num / step) * step;
   quantizedValue = parseFloat(quantizedValue.toFixed(floatLength));

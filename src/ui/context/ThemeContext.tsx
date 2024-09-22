@@ -7,40 +7,51 @@ import {
   useState,
 } from 'react';
 import {
-  LIGHTNESS_OF_PEAK_CHROMA,
+  PEAK_LIGHTNESS,
   CHROMA_STEP,
   LIGHTNESS_STEP,
   HUE_STEP,
-  P3_MAX_CHROMA_OFFSET,
-  SECONDARY_CHROMA_RATIO,
+  P3_PEAK_CHROMA_OFFSET,
+  SECONDARY_CHROMA_MULT,
   UTILITY_PEAK_CHROMA,
   WARNING_HUE,
   ERROR_HUE,
   NEUTRAL_VARIANT_PEAK_CHROMA,
   NEUTRAL_PEAK_CHROMA,
 } from '../../common/constants';
-import { roundToStep } from '../../common/numberUtils';
-import { replaceCamelCaseWord, camelToKebab } from '../../common/stringUtils';
+import { quantize } from '../../common/numberUtils';
 import {
-  chromaOfLightness,
-  hueOfLightness,
-  maxChromaOfLightness,
+  replaceWordInCamelCase,
+  camelCaseToKebabCase,
+} from '../../common/stringUtils';
+import {
+  chromaForLightness,
+  hueForLightness,
+  peakChromaForLightnessAndHue,
 } from '../../common/colour';
 
+// ThemeContext의 타입 정의
 interface ThemeContextType {
   theme: string;
   setTheme: React.Dispatch<React.SetStateAction<string>>;
-  updateTheme: (newThemeBoolean: boolean) => void;
   toggleTheme: () => void;
   hues: { from: number; to: number };
   setHues: React.Dispatch<React.SetStateAction<{ from: number; to: number }>>;
-  updateHues: (newHues: { from: number; to: number }) => void;
   syncHues: () => void;
 }
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(
-  undefined
-);
+// 기본값 설정
+const defaultThemeContext: ThemeContextType = {
+  theme: 'light', // 기본값은 'light' 테마
+  setTheme: () => {},
+  toggleTheme: () => {},
+  hues: { from: 0, to: 0 },
+  setHues: () => {},
+  syncHues: () => {},
+};
+
+export const ThemeContext =
+  createContext<ThemeContextType>(defaultThemeContext);
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -173,19 +184,9 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState('light');
   const [hues, setHues] = useState({ from: 0, to: 0 });
 
-  const updateTheme = useCallback((newThemeBoolean: boolean) => {
-    setTheme(newThemeBoolean ? 'light' : 'dark');
-  }, []);
-
   const toggleTheme = useCallback(() => {
     setTheme((prevTheme) => {
       return prevTheme === 'light' ? 'dark' : 'light';
-    });
-  }, []);
-
-  const updateHues = useCallback((newHues: { from: number; to: number }) => {
-    setHues((prevHues) => {
-      return { ...prevHues, ...newHues };
     });
   }, []);
 
@@ -207,20 +208,20 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         ([roleName, lightnessOfThemes]) => {
           Object.entries(lightnessOfThemes).forEach(
             ([themeName, lightness]) => {
-              let chroma = chromaOfLightness(
+              let chroma = chromaForLightness(
                 lightness,
-                LIGHTNESS_OF_PEAK_CHROMA,
+                PEAK_LIGHTNESS,
                 peakChroma
               );
-              chroma = roundToStep(chroma, CHROMA_STEP);
+              chroma = quantize(chroma, CHROMA_STEP);
 
-              let propertyName = replaceCamelCaseWord(roleName, 'name', name);
-              propertyName = camelToKebab(propertyName);
+              let propertyName = replaceWordInCamelCase(roleName, 'name', name);
+              propertyName = camelCaseToKebabCase(propertyName);
               propertyName = `--${propertyName}-${themeName}`;
-              const propertyValue = `oklch(${roundToStep(
+              const propertyValue = `oklch(${quantize(
                 lightness,
                 LIGHTNESS_STEP
-              )} ${chroma} ${roundToStep(hue, HUE_STEP)}deg)`;
+              )} ${chroma} ${quantize(hue, HUE_STEP)}deg)`;
               targetDom.style.setProperty(propertyName, propertyValue);
             }
           );
@@ -242,20 +243,17 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           Object.entries(lightnessOfThemes).forEach(
             ([themeName, lightness]) => {
               let chroma =
-                chromaOfLightness(
-                  lightness,
-                  LIGHTNESS_OF_PEAK_CHROMA,
-                  peakChroma
-                ) * chromaMultiplier;
-              chroma = roundToStep(chroma, CHROMA_STEP);
+                chromaForLightness(lightness, PEAK_LIGHTNESS, peakChroma) *
+                chromaMultiplier;
+              chroma = quantize(chroma, CHROMA_STEP);
 
-              let hue = hueOfLightness(lightness, hues);
-              hue = roundToStep(hue, HUE_STEP);
+              let hue = hueForLightness(lightness, hues);
+              hue = quantize(hue, HUE_STEP);
 
-              let propertyName = replaceCamelCaseWord(roleName, 'name', name);
-              propertyName = camelToKebab(propertyName);
+              let propertyName = replaceWordInCamelCase(roleName, 'name', name);
+              propertyName = camelCaseToKebabCase(propertyName);
               propertyName = `--${propertyName}-${themeName}`;
-              const propertyValue = `oklch(${roundToStep(
+              const propertyValue = `oklch(${quantize(
                 lightness,
                 LIGHTNESS_STEP
               )} ${chroma} ${hue}deg)`;
@@ -269,9 +267,11 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   );
 
   useLayoutEffect(() => {
-    const isLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    updateTheme(isLight);
-  }, [updateTheme]);
+    const initTheme = window.matchMedia('(prefers-color-scheme: light)').matches
+      ? 'light'
+      : 'dark';
+    setTheme(initTheme);
+  }, []);
   useLayoutEffect(() => {
     const body = document.body;
     body.dataset.theme = theme;
@@ -279,9 +279,10 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useLayoutEffect(() => {
     const root = document.documentElement;
 
-    const peakChroma =
-      maxChromaOfLightness(LIGHTNESS_OF_PEAK_CHROMA, hues) -
-      P3_MAX_CHROMA_OFFSET;
+    // const peakChroma =
+    //   peakChromaForLightnessAndHue(PEAK_LIGHTNESS, hues) -
+    //   P3_PEAK_CHROMA_OFFSET;
+    const peakChroma = 0.11;
 
     applyDynamicHueCssProperties(
       vividsRef.current,
@@ -294,7 +295,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       vividsRef.current,
       'secondary',
       peakChroma,
-      SECONDARY_CHROMA_RATIO,
+      SECONDARY_CHROMA_MULT,
       root
     );
     applyStaticHueCssProperties(
@@ -377,11 +378,9 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       value={{
         theme,
         setTheme,
-        updateTheme,
         toggleTheme,
         hues,
         setHues,
-        updateHues,
         syncHues,
       }}
     >

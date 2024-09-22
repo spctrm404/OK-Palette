@@ -1,4 +1,4 @@
-export const formatNum = (
+export const formatNumDigits = (
   num: number,
   intLength: number,
   floatLength: number
@@ -10,12 +10,12 @@ export const formatNum = (
   }`;
 };
 
-export const formatNumToStep = (num: number, step: number): string => {
+export const formatNumQuantize = (num: number, step: number): string => {
   const floatLength = (step.toString().split('.')[1] || '').length;
-  return formatNum(num, -1, floatLength);
+  return formatNumDigits(num, -1, floatLength);
 };
 
-export const camelToKebab = (camelString: string): string => {
+export const camelCaseToKebabCase = (camelString: string): string => {
   const trimmedString = camelString.trim();
   const kebabString = trimmedString
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -26,7 +26,7 @@ export const camelToKebab = (camelString: string): string => {
   return kebabString;
 };
 
-export const replaceCamelCaseWord = (
+export const replaceWordInCamelCase = (
   camelString: string,
   targetWord: string,
   replacementWord: string

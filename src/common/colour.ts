@@ -1,4 +1,4 @@
-import { CHROMA_LIMIT, CHROMA_STEP } from './constants';
+import { P3_CHROMA_LIMIT, CHROMA_STEP } from './constants';
 import { degToRad, clamp } from './numberUtils';
 
 export const okLChToOkLab = ({
@@ -9,11 +9,14 @@ export const okLChToOkLab = ({
   L: number;
   C: number;
   h: number;
-}) => ({
-  L,
-  a: Math.cos(degToRad(h)) * C,
-  b: Math.sin(degToRad(h)) * C,
-});
+}) => {
+  const radH = degToRad(h);
+  return {
+    L,
+    a: Math.cos(radH) * C,
+    b: Math.sin(radH) * C,
+  };
+};
 
 export const okLabToXYZ = (Lab: { L: number; a: number; b: number }) => {
   const okLabToLMS = ({ L, a, b }: { L: number; a: number; b: number }) => ({
@@ -64,19 +67,18 @@ export const XYZToLinearDisplayP3 = (XYZ: {
     XYZ
   );
 
-export const gammaCorrect = (value: number) => {
-  return value <= 0.0031308
-    ? 12.92 * value
-    : 1.055 * Math.pow(value, 1 / 2.4) - 0.055;
-};
-
 export const gammaCorrectRGB = (linearRGB: {
   R: number;
   G: number;
   B: number;
 }) => {
   return Object.fromEntries(
-    Object.entries(linearRGB).map(([key, value]) => [key, gammaCorrect(value)])
+    Object.entries(linearRGB).map(([key, value]) => [
+      key,
+      value <= 0.0031308
+        ? 12.92 * value
+        : 1.055 * Math.pow(value, 1 / 2.4) - 0.055,
+    ])
   ) as {
     R: number;
     G: number;
@@ -115,20 +117,15 @@ export const normalizedRGBToHex = ({
     )
     .join('');
 
-export const hueOfLightness = (
+export const hueForLightness = (
   lightness: number,
   { from: hueFrom, to: hueTo }: { from: number; to: number }
 ): number => {
-  const hue =
-    hueFrom === hueTo
-      ? hueFrom
-      : hueFrom < hueTo
-      ? (hueFrom + lightness * (hueTo - hueFrom)) % 360
-      : (hueFrom + lightness * (hueTo + 360 - hueFrom)) % 360;
-  return hue;
+  const hueDiff = hueFrom < hueTo ? hueTo - hueFrom : hueTo + 360 - hueFrom;
+  return (hueFrom + lightness * hueDiff) % 360;
 };
 
-export const chromaOfLightness = (
+export const chromaForLightness = (
   lightness: number,
   peakLightness: number,
   peakChroma: number
@@ -144,16 +141,27 @@ export const chromaOfLightness = (
   return chroma;
 };
 
-export const maxChromaOfLightness = (
-  lightness: number,
+export const peakChromaForLightnessAndHue = (
+  peakLightness: number,
   hues: { from: number; to: number }
 ): number => {
-  const hue = hueOfLightness(lightness, hues);
-  for (let chroma = CHROMA_LIMIT; chroma >= 0; chroma -= CHROMA_STEP) {
-    const xyz = okLChToXYZ({ L: lightness, C: chroma, h: hue });
+  const hue = hueForLightness(peakLightness, hues);
+
+  let low = 0;
+  let high = P3_CHROMA_LIMIT;
+
+  while (high - low > CHROMA_STEP) {
+    const mid = (low + high) / 2;
+    const xyz = okLChToXYZ({ L: peakLightness, C: mid, h: hue });
     const linearDisplayP3 = XYZToLinearDisplayP3(xyz);
     const displayP3 = gammaCorrectRGB(linearDisplayP3);
-    if (displayP3.R <= 1 && displayP3.G <= 1 && displayP3.B <= 1) return chroma;
+
+    if (displayP3.R <= 1 && displayP3.G <= 1 && displayP3.B <= 1) {
+      low = mid; // chroma can be higher
+    } else {
+      high = mid; // chroma must be lower
+    }
   }
-  return 0;
+
+  return low;
 };
