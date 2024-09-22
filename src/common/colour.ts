@@ -1,5 +1,22 @@
-import { P3_CHROMA_LIMIT, CHROMA_STEP } from './constants';
-import { degToRad, clamp } from './numberUtils';
+import {
+  LIGHTNESS_INTEGER_LENGTH,
+  LIGHTNESS_DECIMAL_LENGTH,
+  LIGHTNESS_STEP,
+  CHROMA_INTEGER_LENGTH,
+  CHROMA_DECIMAL_LENGTH,
+  CHROMA_STEP,
+  HUE_INTEGER_LENGTH,
+  HUE_DECIMAL_LENGTH,
+  HUE_STEP,
+  P3_CHROMA_LIMIT,
+  P3_PEAK_CHROMA_OFFSET,
+  PEAK_LIGHTNESS,
+  SECONDARY_CHROMA_MULT,
+  NEUTRAL_VARIANT_PEAK_CHROMA,
+  NEUTRAL_PEAK_CHROMA,
+  COLOUR_FLOAT_DECIMAL_PRECISION,
+} from './constants';
+import { degToRad, clamp, quantize } from './numberUtils';
 
 export const okLChToOkLab = ({
   L,
@@ -38,9 +55,9 @@ export const XYZToRGB = (
   matrix: number[][],
   { X, Y, Z }: { X: number; Y: number; Z: number }
 ) => ({
-  R: matrix[0][0] * X + matrix[0][1] * Y + matrix[0][2] * Z,
-  G: matrix[1][0] * X + matrix[1][1] * Y + matrix[1][2] * Z,
-  B: matrix[2][0] * X + matrix[2][1] * Y + matrix[2][2] * Z,
+  r: matrix[0][0] * X + matrix[0][1] * Y + matrix[0][2] * Z,
+  g: matrix[1][0] * X + matrix[1][1] * Y + matrix[1][2] * Z,
+  b: matrix[2][0] * X + matrix[2][1] * Y + matrix[2][2] * Z,
 });
 
 export const XYZToLinearSRGB = (XYZ: { X: number; Y: number; Z: number }) =>
@@ -68,9 +85,9 @@ export const XYZToLinearDisplayP3 = (XYZ: {
   );
 
 export const gammaCorrectRGB = (linearRGB: {
-  R: number;
-  G: number;
-  B: number;
+  r: number;
+  g: number;
+  b: number;
 }) => {
   return Object.fromEntries(
     Object.entries(linearRGB).map(([key, value]) => [
@@ -80,19 +97,19 @@ export const gammaCorrectRGB = (linearRGB: {
         : 1.055 * Math.pow(value, 1 / 2.4) - 0.055,
     ])
   ) as {
-    R: number;
-    G: number;
-    B: number;
+    r: number;
+    g: number;
+    b: number;
   };
 };
 
-export const clampRGB = (RGB: { R: number; G: number; B: number }) => {
+export const clampRGB = (RGB: { r: number; g: number; b: number }) => {
   return Object.fromEntries(
     Object.entries(RGB).map(([key, value]) => [key, clamp(value, 0, 1)])
   ) as {
-    R: number;
-    G: number;
-    B: number;
+    r: number;
+    g: number;
+    b: number;
   };
 };
 
@@ -100,15 +117,15 @@ export const okLChToXYZ = (LCh: { L: number; C: number; h: number }) =>
   okLabToXYZ(okLChToOkLab(LCh));
 
 export const normalizedRGBToHex = ({
-  R,
-  G,
-  B,
+  r,
+  g,
+  b,
 }: {
-  R: number;
-  G: number;
-  B: number;
+  r: number;
+  g: number;
+  b: number;
 }): string =>
-  [R, G, B]
+  [r, g, b]
     .map((value) =>
       Math.round(value * 255)
         .toString(16)
@@ -116,6 +133,60 @@ export const normalizedRGBToHex = ({
         .toUpperCase()
     )
     .join('');
+
+export const createPalette = (
+  swatchStep: number,
+  peakLightness: number,
+  peakChroma: number,
+  hue: number
+) => {
+  console.log(swatchStep, peakLightness, peakChroma, hue);
+  const total = 100 / swatchStep + 1;
+
+  const palette: {
+    okLCh: { L: number; C: number; h: number };
+    sRGB: { r: number; g: number; b: number };
+    displayP3: { r: number; g: number; b: number };
+    gamut: string;
+  }[] = [];
+
+  for (let n = 0; n < total; n++) {
+    const lightness = quantize(n / (total - 1), LIGHTNESS_STEP);
+    const chroma =
+      lightness === peakLightness
+        ? peakChroma
+        : lightness < peakLightness
+        ? quantize((peakChroma / peakLightness) * lightness, CHROMA_STEP)
+        : quantize(
+            (peakChroma / (1 - peakLightness)) * (1 - lightness),
+            CHROMA_STEP
+          );
+    const okLCh = { L: lightness, C: chroma, h: hue };
+
+    const XYZ = okLChToXYZ(okLCh);
+
+    const linearSRGB = XYZToLinearSRGB(XYZ);
+    const sRGB = gammaCorrectRGB(linearSRGB);
+    const clampedSRGB = clampRGB(sRGB);
+    const isSRGB = chroma === 0 || (sRGB.r <= 1 && sRGB.g <= 1 && sRGB.b <= 1);
+
+    const linearDisplayP3 = XYZToLinearDisplayP3(XYZ);
+    const displayP3 = gammaCorrectRGB(linearDisplayP3);
+    const clampedDisplayP3 = clampRGB(displayP3);
+    const isDisplayP3 =
+      chroma === 0 ||
+      (displayP3.r <= 1 && displayP3.g <= 1 && displayP3.b <= 1);
+
+    palette.push({
+      okLCh: okLCh,
+      sRGB: clampedSRGB,
+      displayP3: clampedDisplayP3,
+      gamut: isSRGB ? 'sRGB' : isDisplayP3 ? 'P3' : 'Rec2020',
+    });
+  }
+
+  return palette;
+};
 
 export const hueForLightness = (
   lightness: number,
@@ -156,7 +227,7 @@ export const peakChromaForLightnessAndHue = (
     const linearDisplayP3 = XYZToLinearDisplayP3(xyz);
     const displayP3 = gammaCorrectRGB(linearDisplayP3);
 
-    if (displayP3.R <= 1 && displayP3.G <= 1 && displayP3.B <= 1) {
+    if (displayP3.r <= 1 && displayP3.g <= 1 && displayP3.b <= 1) {
       low = mid; // chroma can be higher
     } else {
       high = mid; // chroma must be lower

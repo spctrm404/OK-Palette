@@ -1,0 +1,347 @@
+$min-size: 6.25rem;
+$thumb-size: 3rem;
+$track-rad: 0.25rem;
+$state-rad: 0.25rem;
+$state-size: 2.5rem;
+$thumb-shape-size: 1.5rem;
+$thumb-shape-size-pressed: 1.75rem;
+$thumb-shape-indicator-gap: 0.25rem;
+$thumb-shape-indicator-gap-pressed: 0.5rem;
+$thumb-shape-indicator-width: 0.25rem;
+$thumb-shape-indicator-width-pressed: 0.125rem;
+$thumb-shape-indicator-rad: 0.125rem;
+$guide-thickness: 0.0625rem;
+$guide-rad: 512rem;
+$guide-dash: 0.5rem;
+$guide-gap: 0.25rem;
+$duration: 200ms;
+$easing: cubic-bezier(0.2, 0, 0, 1);
+
+@mixin dashed-line($dash, $gap, $direction, $color) {
+  @if $direction == 'top' {
+    background: linear-gradient(
+      0deg,
+      $color calc($dash / ($dash + $gap) * 100%),
+      transparent calc($dash / ($dash + $gap) * 100%)
+    );
+    background-position: center bottom;
+    background-size: 0.0625rem calc($dash + $gap);
+  } @else if $direction == 'bottom' {
+    background: linear-gradient(
+      180deg,
+      $color calc($dash / ($dash + $gap) * 100%),
+      transparent calc($dash / ($dash + $gap) * 100%)
+    );
+    background-position: center top;
+    background-size: 0.0625rem calc($dash + $gap);
+  } @else if $direction == 'left' {
+    background: linear-gradient(
+      270deg,
+      $color calc($dash / ($dash + $gap) * 100%),
+      transparent calc($dash / ($dash + $gap) * 100%)
+    );
+    background-position: right center;
+    background-size: calc($dash + $gap) 0.0625rem;
+  } @else if $direction == 'right' {
+    background: linear-gradient(
+      90deg,
+      $color calc($dash / ($dash + $gap) * 100%),
+      transparent calc($dash / ($dash + $gap) * 100%)
+    );
+    background-position: left center;
+    background-size: calc($dash + $gap) 0.0625rem;
+  }
+}
+
+.xyslider {
+  $root-selector: &;
+
+  &__root {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    place-items: stretch stretch;
+    min-width: $min-size + $thumb-size;
+    min-height: $min-size + $thumb-size;
+    padding: 0.5 * $thumb-size;
+  }
+
+  &__track {
+    $parent-selector: &;
+
+    grid-row: 1 / -1;
+    grid-column: 1 / -1;
+
+    &__shape {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-color: var(--secondary-container-light);
+      border-radius: $track-rad;
+      transition: background-color $duration $easing;
+      @at-root #{$root-selector}[data-theme='dark'] #{&} {
+        background-color: var(--secondary-container-dark);
+      }
+
+      @at-root #{$root-selector}[data-disabled] #{&} {
+        background-color: color-mix(
+          in oklch,
+          var(--on-surface-light) 12%,
+          transparent
+        );
+        @at-root #{$root-selector}[data-theme='dark']#{&} {
+          background-color: color-mix(
+            in oklch,
+            var(--on-surface-dark) 12%,
+            transparent
+          );
+        }
+      }
+    }
+
+    &__guide {
+      $line-light: color-mix(in oklch, var(--primary-light) 16%, transparent);
+      $line-dark: color-mix(in oklch, var(--primary-dark) 16%, transparent);
+
+      position: absolute;
+      z-index: 2;
+      transition: background-color $duration $easing,
+        transform $duration $easing;
+
+      @at-root #{$parent-selector}[data-hovered] #{&} {
+        transform: scale(100%, 100%);
+      }
+      @at-root #{$parent-selector}:has(#{$root-selector}__thumb[data-focused])
+          #{&} {
+        transform: scale(100%, 100%);
+      }
+      @at-root #{$parent-selector}:has(#{$root-selector}__thumb[data-dragging])
+          #{&} {
+        transform: scale(100%, 100%);
+      }
+
+      &--part {
+        &-vertical {
+          width: $guide-thickness;
+          transform: scale(100%, 0%);
+        }
+
+        &-horizontal {
+          height: $guide-thickness;
+          transform: scale(0%, 100%);
+        }
+
+        &-top {
+          top: 0;
+          bottom: calc(
+            100% - var(--normalized-val-y) * 100% + 0.5 * $thumb-size
+          );
+          left: calc(
+            var(--normalized-val-x) * 100% + $thumb-shape-size - 0.5 *
+              $guide-thickness - 0.5 * $thumb-size
+          );
+          border-radius: 0 0 $guide-rad $guide-rad;
+          transform-origin: bottom center;
+          @include dashed-line($guide-dash, $guide-gap, top, $line-light);
+          @at-root #{$root-selector}[data-theme='dark'] #{&} {
+            @include dashed-line($guide-dash, $guide-gap, top, $line-dark);
+          }
+        }
+
+        &-bottom {
+          top: calc(
+            var(--normalized-val-y) * 100% + $thumb-size - 0.5 * $thumb-size
+          );
+          bottom: 0;
+          left: calc(
+            var(--normalized-val-x) * 100% + $thumb-shape-size - 0.5 *
+              $guide-thickness - 0.5 * $thumb-size
+          );
+          border-radius: $guide-rad $guide-rad 0 0;
+          transform-origin: top center;
+          @include dashed-line($guide-dash, $guide-gap, bottom, $line-light);
+          @at-root #{$root-selector}[data-theme='dark'] #{&} {
+            @include dashed-line($guide-dash, $guide-gap, bottom, $line-dark);
+          }
+        }
+
+        &-left {
+          top: calc(
+            var(--normalized-val-y) * 100% + $thumb-shape-size - 0.5 *
+              $guide-thickness - 0.5 * $thumb-size
+          );
+          right: calc(
+            100% - var(--normalized-val-x) * 100% + 0.5 * $thumb-size
+          );
+          left: 0;
+          border-radius: 0 $guide-rad $guide-rad 0;
+          transform-origin: center right;
+          @include dashed-line($guide-dash, $guide-gap, left, $line-light);
+          @at-root #{$root-selector}[data-theme='dark'] #{&} {
+            @include dashed-line($guide-dash, $guide-gap, left, $line-dark);
+          }
+        }
+
+        &-right {
+          top: calc(
+            var(--normalized-val-y) * 100% + $thumb-shape-size - 0.5 *
+              $guide-thickness - 0.5 * $thumb-size
+          );
+          right: 0;
+          left: calc(
+            var(--normalized-val-x) * 100% + $thumb-size - 0.5 * $thumb-size
+          );
+          border-radius: $guide-rad 0 0 $guide-rad;
+          transform-origin: center left;
+          @include dashed-line($guide-dash, $guide-gap, right, $line-light);
+          @at-root #{$root-selector}[data-theme='dark'] #{&} {
+            @include dashed-line($guide-dash, $guide-gap, right, $line-dark);
+          }
+        }
+      }
+    }
+  }
+
+  &__thumb {
+    $parent-selector: &;
+
+    top: calc(var(--normalized-val-y) * 100% - 0.5 * $thumb-size);
+    left: calc(var(--normalized-val-x) * 100% - 0.5 * $thumb-size);
+    z-index: 3;
+    width: $thumb-size;
+    height: $thumb-size;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
+
+    @at-root #{$root-selector}[data-disabled] #{&} {
+      cursor: auto;
+    }
+
+    &__state {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 1;
+      width: $state-size;
+      height: $state-size;
+      background-color: var(--primary-light);
+      border-radius: $state-rad;
+      opacity: 0;
+      transition: background-color $duration $easing, opacity $duration $easing,
+        transform $duration $easing;
+      transform: translate(-50%, -50%) scale(0%, 0%);
+
+      @at-root #{$root-selector}[data-theme='dark'] #{&} {
+        background-color: var(--primary-dark);
+      }
+
+      @at-root #{$parent-selector}[data-hovered] #{&} {
+        opacity: 0.08;
+        transform: translate(-50%, -50%) scale(100%, 100%);
+      }
+      @at-root #{$parent-selector}[data-focused] #{&} {
+        opacity: 0.08;
+        transform: translate(-50%, -50%) scale(100%, 100%);
+      }
+      @at-root #{$parent-selector}[focus-visible] #{&} {
+        opacity: 0.08;
+        transform: translate(-50%, -50%) scale(100%, 100%);
+      }
+      @at-root #{$parent-selector}[data-dragging] #{&} {
+        opacity: 0.12;
+        transform: translate(-50%, -50%) scale(100%, 100%);
+      }
+      @at-root #{$root-selector}[data-disabled] #{&} {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0%, 0%);
+      }
+    }
+
+    &__shape {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 2;
+      width: $thumb-shape-size;
+      height: $thumb-shape-size;
+      transition: width $duration $easing, height $duration $easing,
+        background-color $duration $easing;
+      transform: translate(-50%, -50%);
+
+      @at-root #{$parent-selector}[data-dragging] #{&} {
+        width: $thumb-shape-size-pressed;
+        height: $thumb-shape-size-pressed;
+      }
+
+      &__component {
+        position: absolute;
+        background-color: var(--primary-light);
+        border-radius: $thumb-shape-indicator-rad;
+        transition: inset $duration $easing, background-color $duration $easing;
+        @at-root #{$root-selector}[data-theme='dark'] #{&} {
+          background-color: var(--primary-dark);
+        }
+
+        @at-root #{$root-selector}[data-disabled] #{&} {
+          background-color: color-mix(
+            in oklch,
+            var(--on-surface-light) 38%,
+            transparent
+          );
+          @at-root #{$root-selector}[data-theme='dark']#{&} {
+            background-color: color-mix(
+              in oklch,
+              var(--on-surface-dark) 38%,
+              transparent
+            );
+          }
+        }
+
+        &--part {
+          &-top {
+            inset: 0 calc(50% - 0.5 * $thumb-shape-indicator-width)
+              calc(50% + 0.5 * $thumb-shape-indicator-gap);
+            @at-root #{$parent-selector}[data-dragging] #{&} {
+              inset: 0 calc(50% - 0.5 * $thumb-shape-indicator-width-pressed)
+                calc(50% + 0.5 * $thumb-shape-indicator-gap-pressed);
+            }
+          }
+
+          &-left {
+            inset: calc(50% - 0.5 * $thumb-shape-indicator-width) 0
+              calc(50% - 0.5 * $thumb-shape-indicator-width)
+              calc(50% + 0.5 * $thumb-shape-indicator-gap);
+            @at-root #{$parent-selector}[data-dragging] #{&} {
+              inset: calc(50% - 0.5 * $thumb-shape-indicator-width-pressed) 0
+                calc(50% - 0.5 * $thumb-shape-indicator-width-pressed)
+                calc(50% + 0.5 * $thumb-shape-indicator-gap-pressed);
+            }
+          }
+
+          &-bottom {
+            inset: calc(50% + 0.5 * $thumb-shape-indicator-gap)
+              calc(50% - 0.5 * $thumb-shape-indicator-width) 0;
+            @at-root #{$parent-selector}[data-dragging] #{&} {
+              inset: calc(50% + 0.5 * $thumb-shape-indicator-gap-pressed)
+                calc(50% - 0.5 * $thumb-shape-indicator-width-pressed) 0;
+            }
+          }
+
+          &-right {
+            inset: calc(50% - 0.5 * $thumb-shape-indicator-width)
+              calc(50% + 0.5 * $thumb-shape-indicator-gap)
+              calc(50% - 0.5 * $thumb-shape-indicator-width) 0;
+            @at-root #{$parent-selector}[data-dragging] #{&} {
+              inset: calc(50% - 0.5 * $thumb-shape-indicator-width-pressed)
+                calc(50% + 0.5 * $thumb-shape-indicator-gap-pressed)
+                calc(50% - 0.5 * $thumb-shape-indicator-width-pressed) 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}

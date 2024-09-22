@@ -1,15 +1,44 @@
+import {
+  LIGHTNESS_INTEGER_LENGTH,
+  LIGHTNESS_DECIMAL_LENGTH,
+  LIGHTNESS_STEP,
+  CHROMA_INTEGER_LENGTH,
+  CHROMA_DECIMAL_LENGTH,
+  CHROMA_STEP,
+  HUE_INTEGER_LENGTH,
+  HUE_DECIMAL_LENGTH,
+  HUE_STEP,
+  P3_CHROMA_LIMIT,
+  P3_PEAK_CHROMA_OFFSET,
+  PEAK_LIGHTNESS,
+  SECONDARY_CHROMA_MULT,
+  NEUTRAL_VARIANT_PEAK_CHROMA,
+  NEUTRAL_PEAK_CHROMA,
+  COLOUR_FLOAT_DECIMAL_PRECISION,
+} from '../common/constants';
 import { ThemeContext } from './context/ThemeContext';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
+import './_App.scss';
+import Button from './component/Button/Button';
+import NumberField from './component/NumberField/NumberField';
+import Slider from './component/Slider/Slider';
+import Switch from './component/Switch/Switch';
+import st from './_App.module.scss';
+import classNames from 'classnames/bind';
+
+const cx = classNames.bind(st);
 
 function App() {
   const { theme, toggleTheme, syncHues } = useContext(ThemeContext);
 
+  const [isHueRanged, setHueRanged] = useState(false);
+
   const sendMsg = () => {
-    const lightnessStep = 10;
-    const peakLightness = 50;
-    const peakChroma = 11;
+    const swatchStep = 10;
+    const peakLightness = 0.5;
+    const peakChroma = 0.11;
     const hue = 260;
-    console.log('lightnessStep', lightnessStep);
+    console.log('lightnessStep', swatchStep);
     console.log('peakLightness', peakLightness);
     console.log('peakChroma', peakChroma);
     console.log('hue', hue);
@@ -17,7 +46,7 @@ function App() {
       {
         pluginMessage: {
           type: 'create-palette',
-          lightnessStep,
+          swatchStep,
           peakLightness,
           peakChroma,
           hue,
@@ -29,84 +58,57 @@ function App() {
 
   return (
     <>
-      <h2>OK-Palette</h2>
-      <p>
-        Create a UI palette using the perceptually uniform color space, OKLCH.
-      </p>
-
-      <fieldset>
-        <legend>Lightness Step</legend>
-        <div>
-          <input
-            type="radio"
-            id="lightness-step-1"
-            name="lightness-step"
-            value="1"
-          />
-          <label htmlFor="lightness-step-1">1</label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="lightness-step-2"
-            name="lightness-step"
-            value="2"
-          />
-          <label htmlFor="lightness-step-2">2</label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="lightness-step-5"
-            name="lightness-step"
-            value="5"
-          />
-          <label htmlFor="lightness-step-5">5</label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="lightness-step-10"
-            name="lightness-step"
-            value="10"
-            checked
-          />
-          <label htmlFor="lightness-step-10">10</label>
-        </div>
-      </fieldset>
-
-      <div>
-        <label htmlFor="peak-lightness">Peak Lightness</label>
-        <input
-          id="peak-lightness"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          value="50"
+      <div
+        className={cx('controller__section', 'controller__section--area-hues')}
+      >
+        <h3 className={cx('controller__section__title')}>Hue</h3>
+        <Switch
+          className={cx('controller__is-ranged')}
+          isSelected={isHueRanged}
+          onChange={() => {}}
         />
-      </div>
-
-      <div>
-        <label htmlFor="peak-chroma">Peak Chroma</label>
-        <input
-          id="peak-chroma"
-          type="number"
-          min="0"
-          max="40"
-          step="0.1"
-          value="11"
+        <Slider
+          className={cx('controller__slider-hue-from')}
+          value={0}
+          minValue={0}
+          maxValue={360}
+          step={HUE_STEP}
+          onChange={() => {}}
+          onChangeEnd={() => {}}
         />
+        <Slider
+          className={cx('controller__slider-hue-to')}
+          isDisabled={!isHueRanged}
+          value={0}
+          minValue={0}
+          maxValue={360}
+          step={HUE_STEP}
+          onChange={() => {}}
+          onChangeEnd={() => {}}
+        />
+        <div className={cx('controller__number-fields-hues')}>
+          <NumberField
+            className={cx('controller__number-fields-hue-from')}
+            value={0}
+            minValue={0}
+            maxValue={360}
+            step={HUE_STEP}
+            onChange={() => {}}
+            onChangeEnd={() => {}}
+          />
+          <NumberField
+            className={cx('controller__number-fields-hue-to')}
+            isDisabled={!isHueRanged}
+            value={0}
+            minValue={0}
+            maxValue={360}
+            step={HUE_STEP}
+            onChange={() => {}}
+            onChangeEnd={() => {}}
+          />
+        </div>
       </div>
-
-      <div>
-        <label htmlFor="hue">Hue</label>
-        <input id="hue" type="number" min="0" max="360" step="1" value="260" />
-      </div>
-
-      <button id="create" onClick={sendMsg}>
-        Create
-      </button>
+      <Button buttontype="filled" text="Create" onPress={sendMsg} />
     </>
   );
 }
