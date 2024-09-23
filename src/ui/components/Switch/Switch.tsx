@@ -1,6 +1,6 @@
 import { useCallback, useContext, useId } from 'react';
 import { Switch as AriaSwitch } from 'react-aria-components';
-import { ThemeContext } from '../../context/ThemeContext.js';
+import { ThemeContext } from '../../contexts/ThemeContext.js';
 import st from './_Switch.module.scss';
 import classNames from 'classnames/bind';
 

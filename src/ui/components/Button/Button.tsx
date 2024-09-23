@@ -1,10 +1,18 @@
 import { useCallback, useContext } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
-import { ThemeContext } from '../../context/ThemeContext';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Button.module.scss';
 import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
+
+type ButtonType = {
+  buttontype?: 'text' | 'outlined' | 'elevated' | 'tonal' | 'filled';
+  materialIcon?: string;
+  text?: string;
+  onPress?: () => void;
+  className?: string;
+};
 
 const Button = ({
   buttontype = 'text',
@@ -13,7 +21,7 @@ const Button = ({
   onPress = () => {},
   className = '',
   ...props
-}) => {
+}: ButtonType) => {
   const { theme } = useContext(ThemeContext);
 
   const onPressHandler = useCallback(() => {

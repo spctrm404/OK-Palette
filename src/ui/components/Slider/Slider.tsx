@@ -4,7 +4,7 @@ import {
   SliderThumb as AriaSliderThumb,
   SliderTrack as AriaSliderTrack,
 } from 'react-aria-components';
-import { ThemeContext } from '../../context/ThemeContext';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Slider.module.scss';
 import classNames from 'classnames/bind';
 

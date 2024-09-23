@@ -1,18 +1,17 @@
 import {
   createContext,
-  ReactNode,
   useCallback,
   useLayoutEffect,
   useRef,
   useState,
 } from 'react';
-import { TLightnessTable } from '../../common/types';
+import { lightnessTableType } from '../../common/types';
 import {
   THEME_PEAK_LIGHTNESS,
   CHROMA_STEP,
   LIGHTNESS_STEP,
   HUE_STEP,
-  THEME_PEAK_CHROMA_HEADROOM,
+  // THEME_PEAK_CHROMA_HEADROOM,
   THEME_SECONDARY_CHROMA_MULT,
   THEME_UTILITY_PEAK_CHROMA,
   THEME_WARNING_HUE,
@@ -23,7 +22,7 @@ import {
 import {
   chromaForLightness,
   hueForLightness,
-  peakChromaForLightnessAndHue,
+  // peakChromaForLightnessAndHue,
 } from '../../common/colour';
 import { quantize } from '../../common/numberUtils';
 import {
@@ -31,11 +30,28 @@ import {
   camelCaseToKebabCase,
 } from '../../common/stringUtils';
 
-type TTheme = 'light' | 'dark';
+type ThemeContextType = {
+  theme: 'light' | 'dark';
+  hues: { from: number; to: number };
+  setTheme?: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
+  toggleTheme?: () => void;
+  setHues?: React.Dispatch<
+    React.SetStateAction<{
+      from: number;
+      to: number;
+    }>
+  >;
+  syncHues?: () => void;
+};
 
-export const ThemeContext = createContext<TTheme>('light');
+export const ThemeContext = createContext<ThemeContextType>({
+  theme: 'light',
+  hues: { from: 0, to: 0 },
+});
 
-const ThemeProvider: React.FC = ({ children }) => {
+export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const vividsRef = useRef({
     name: {
       light: 0.4,
@@ -159,7 +175,7 @@ const ThemeProvider: React.FC = ({ children }) => {
     },
   });
 
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [hues, setHues] = useState({ from: 0, to: 0 });
 
   const toggleTheme = useCallback(() => {
@@ -176,7 +192,7 @@ const ThemeProvider: React.FC = ({ children }) => {
 
   const applyStaticHueCssProperties = useCallback(
     (
-      lightnessTable: TLightnessTable,
+      lightnessTable: lightnessTableType,
       name: string,
       peakChroma: number,
       hue: number,
@@ -210,7 +226,7 @@ const ThemeProvider: React.FC = ({ children }) => {
   );
   const applyDynamicHueCssProperties = useCallback(
     (
-      lightnessTable: TLightnessTable,
+      lightnessTable: lightnessTableType,
       name: string,
       peakChroma: number,
       chromaMultiplier: number,
@@ -369,5 +385,3 @@ const ThemeProvider: React.FC = ({ children }) => {
     </ThemeContext.Provider>
   );
 };
-
-export default ThemeProvider;

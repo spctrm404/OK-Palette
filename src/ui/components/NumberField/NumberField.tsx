@@ -5,7 +5,7 @@ import {
   Input as AriaInput,
 } from 'react-aria-components';
 import IconButton from '../IconButton/IconButton';
-import { ThemeContext } from '../../context/ThemeContext';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_NumberField.module.scss';
 import classNames from 'classnames/bind';
 
@@ -19,7 +19,6 @@ interface NumberFieldProps {
   value?: number;
   onChange?: (newNumber: number) => void;
   isWheelDisabled?: boolean;
-  className?: string;
 }
 
 const NumberField: React.FC<NumberFieldProps> = ({
@@ -29,7 +28,6 @@ const NumberField: React.FC<NumberFieldProps> = ({
   value = 50,
   onChange = () => {},
   isWheelDisabled = true,
-  className = '',
   ...props
 }) => {
   const { theme } = useContext(ThemeContext);
@@ -37,7 +35,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
   const innerValueRef = useRef(value);
   const isInnerValueMatchRef = useRef(true);
 
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const syncInnerValueToValue = useCallback(() => {
     innerValueRef.current = value;
@@ -49,9 +47,9 @@ const NumberField: React.FC<NumberFieldProps> = ({
     isInnerValueMatchRef.current = false;
   }, []);
   const onKeyDownHandler = useCallback(
-    (e) => {
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
       onChange?.(innerValueRef.current);
-      if (e.key === 'Enter') inputRef.current.blur();
+      if (e.key === 'Enter') inputRef.current?.blur();
     },
     [onChange]
   );
@@ -90,7 +88,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
 
   return (
     <AriaNumberField
-      className={cx('number-field', 'number-field__root', className)}
+      className={cx('number-field', 'number-field__root')}
       minValue={minValue}
       maxValue={maxValue}
       step={step}
@@ -100,7 +98,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
       onBlur={onBlurHandler}
       isWheelDisabled={isWheelDisabled}
       data-theme={theme}
-      style={{ '--min-ch': digitLength() }}
+      style={{ '--min-ch': digitLength() } as React.CSSProperties}
       {...props}
     >
       <AriaGroup className={cx('number-field__group', 'number-field-group')}>

@@ -1,34 +1,34 @@
-export type TLchColorSpace = {
+export type lchColorSpaceType = {
   l: number;
   c: number;
   h: number;
 };
-export type TLabColorSpace = {
+export type labColorSpaceType = {
   l: number;
   a: number;
   b: number;
 };
-export type TLmsColorSpace = {
+export type lmsColorSpaceType = {
   l: number;
   m: number;
   s: number;
 };
-export type TXyzColorSpace = {
+export type xyzColorSpaceType = {
   x: number;
   y: number;
   z: number;
 };
-export type TRgbColorSpace = {
+export type rgbColorSpaceType = {
   r: number;
   g: number;
   b: number;
 };
-export type TSwatch = {
-  oklch: TLchColorSpace;
-  sRgb: TRgbColorSpace;
-  dispP3: TRgbColorSpace;
+export type swatchType = {
+  oklch: lchColorSpaceType;
+  sRgb: rgbColorSpaceType;
+  dispP3: rgbColorSpaceType;
   gamut: 'sRGB' | 'P3' | 'Rec2020';
 };
-export type TLightnessTable = {
+export type lightnessTableType = {
   [key: string]: { light: number; dark: number };
 };

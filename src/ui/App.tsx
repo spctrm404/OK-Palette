@@ -16,13 +16,13 @@ import {
   THEME_NEUTRAL_PEAK_CHROMA,
   RGB_FLOAT_PRECISION,
 } from '../common/constants';
-import { ThemeContext } from './context/ThemeContext';
+import { ThemeContext } from './contexts/ThemeContext';
 import { useContext, useState } from 'react';
 import './_App.scss';
-import Button from './component/Button/Button';
-import NumberField from './component/NumberField/NumberField';
-import Slider from './component/Slider/Slider';
-import Switch from './component/Switch/Switch';
+import Button from './components/Button/Button';
+import NumberField from './components/NumberField/NumberField';
+import Slider from './components/Slider/Slider';
+import Switch from './components/Switch/Switch';
 import st from './_App.module.scss';
 import classNames from 'classnames/bind';
 

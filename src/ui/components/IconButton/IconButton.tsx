@@ -1,26 +1,26 @@
 import { useCallback, useContext } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
-import { ThemeContext } from '../../context/ThemeContext';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_IconButton.module.scss';
 import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-// Props 타입 정의
-interface IconButtonProps {
-  buttontype?: string;
+type IconButtonProps = {
+  buttontype?: 'standard' | 'outlined' | 'outlined-child' | 'tonal' | 'filled';
   materialIcon?: string;
   onPress?: () => void;
   className?: string;
-}
+  slot?: string;
+};
 
-const IconButton: React.FC<IconButtonProps> = ({
+const IconButton = ({
   buttontype = 'standard',
   materialIcon = '',
   onPress = () => {},
   className = '',
   ...props
-}) => {
+}: IconButtonProps) => {
   const { theme } = useContext(ThemeContext);
 
   const onPressHandler = useCallback(() => {
