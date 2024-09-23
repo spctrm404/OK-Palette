@@ -6,58 +6,36 @@ import {
   useRef,
   useState,
 } from 'react';
+import { TLightnessTable } from '../../common/types';
 import {
-  PEAK_LIGHTNESS,
+  THEME_PEAK_LIGHTNESS,
   CHROMA_STEP,
   LIGHTNESS_STEP,
   HUE_STEP,
-  P3_PEAK_CHROMA_OFFSET,
-  SECONDARY_CHROMA_MULT,
-  UTILITY_PEAK_CHROMA,
-  WARNING_HUE,
-  ERROR_HUE,
-  NEUTRAL_VARIANT_PEAK_CHROMA,
-  NEUTRAL_PEAK_CHROMA,
+  THEME_PEAK_CHROMA_HEADROOM,
+  THEME_SECONDARY_CHROMA_MULT,
+  THEME_UTILITY_PEAK_CHROMA,
+  THEME_WARNING_HUE,
+  THEME_ERROR_HUE,
+  THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
+  THEME_NEUTRAL_PEAK_CHROMA,
 } from '../../common/constants';
-import { quantize } from '../../common/numberUtils';
-import {
-  replaceWordInCamelCase,
-  camelCaseToKebabCase,
-} from '../../common/stringUtils';
 import {
   chromaForLightness,
   hueForLightness,
   peakChromaForLightnessAndHue,
 } from '../../common/colour';
+import { quantize } from '../../common/numberUtils';
+import {
+  replaceWordInCamelCase,
+  camelCaseToKebabCase,
+} from '../../common/stringUtils';
 
-// ThemeContext의 타입 정의
-interface ThemeContextType {
-  theme: string;
-  setTheme: React.Dispatch<React.SetStateAction<string>>;
-  toggleTheme: () => void;
-  hues: { from: number; to: number };
-  setHues: React.Dispatch<React.SetStateAction<{ from: number; to: number }>>;
-  syncHues: () => void;
-}
+type TTheme = 'light' | 'dark';
 
-// 기본값 설정
-const defaultThemeContext: ThemeContextType = {
-  theme: 'light', // 기본값은 'light' 테마
-  setTheme: () => {},
-  toggleTheme: () => {},
-  hues: { from: 0, to: 0 },
-  setHues: () => {},
-  syncHues: () => {},
-};
+export const ThemeContext = createContext<TTheme>('light');
 
-export const ThemeContext =
-  createContext<ThemeContextType>(defaultThemeContext);
-
-interface ThemeProviderProps {
-  children: ReactNode;
-}
-
-const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+const ThemeProvider: React.FC = ({ children }) => {
   const vividsRef = useRef({
     name: {
       light: 0.4,
@@ -198,7 +176,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const applyStaticHueCssProperties = useCallback(
     (
-      lightnessTable: { [key: string]: { light: number; dark: number } },
+      lightnessTable: TLightnessTable,
       name: string,
       peakChroma: number,
       hue: number,
@@ -210,7 +188,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             ([themeName, lightness]) => {
               let chroma = chromaForLightness(
                 lightness,
-                PEAK_LIGHTNESS,
+                THEME_PEAK_LIGHTNESS,
                 peakChroma
               );
               chroma = quantize(chroma, CHROMA_STEP);
@@ -232,7 +210,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   );
   const applyDynamicHueCssProperties = useCallback(
     (
-      lightnessTable: { [key: string]: { light: number; dark: number } },
+      lightnessTable: TLightnessTable,
       name: string,
       peakChroma: number,
       chromaMultiplier: number,
@@ -243,8 +221,11 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           Object.entries(lightnessOfThemes).forEach(
             ([themeName, lightness]) => {
               let chroma =
-                chromaForLightness(lightness, PEAK_LIGHTNESS, peakChroma) *
-                chromaMultiplier;
+                chromaForLightness(
+                  lightness,
+                  THEME_PEAK_LIGHTNESS,
+                  peakChroma
+                ) * chromaMultiplier;
               chroma = quantize(chroma, CHROMA_STEP);
 
               let hue = hueForLightness(lightness, hues);
@@ -295,34 +276,34 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       vividsRef.current,
       'secondary',
       peakChroma,
-      SECONDARY_CHROMA_MULT,
+      THEME_SECONDARY_CHROMA_MULT,
       root
     );
     applyStaticHueCssProperties(
       vividsRef.current,
       'warning',
-      UTILITY_PEAK_CHROMA,
-      WARNING_HUE,
+      THEME_UTILITY_PEAK_CHROMA,
+      THEME_WARNING_HUE,
       root
     );
     applyStaticHueCssProperties(
       vividsRef.current,
       'error',
-      UTILITY_PEAK_CHROMA,
-      ERROR_HUE,
+      THEME_UTILITY_PEAK_CHROMA,
+      THEME_ERROR_HUE,
       root
     );
     applyDynamicHueCssProperties(
       neutralVariantsRef.current,
       '',
-      NEUTRAL_VARIANT_PEAK_CHROMA,
+      THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
       1,
       root
     );
     applyDynamicHueCssProperties(
       neutralsRef.current,
       '',
-      NEUTRAL_PEAK_CHROMA,
+      THEME_NEUTRAL_PEAK_CHROMA,
       1,
       root
     );

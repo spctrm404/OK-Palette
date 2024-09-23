@@ -1,94 +1,79 @@
 import {
-  LIGHTNESS_INTEGER_LENGTH,
-  LIGHTNESS_DECIMAL_LENGTH,
+  TLchColorSpace,
+  TLabColorSpace,
+  TLmsColorSpace,
+  TXyzColorSpace,
+  TRgbColorSpace,
+  TSwatch,
+} from './types';
+import {
   LIGHTNESS_STEP,
-  CHROMA_INTEGER_LENGTH,
-  CHROMA_DECIMAL_LENGTH,
   CHROMA_STEP,
-  HUE_INTEGER_LENGTH,
-  HUE_DECIMAL_LENGTH,
-  HUE_STEP,
   P3_CHROMA_LIMIT,
-  P3_PEAK_CHROMA_OFFSET,
-  PEAK_LIGHTNESS,
-  SECONDARY_CHROMA_MULT,
-  NEUTRAL_VARIANT_PEAK_CHROMA,
-  NEUTRAL_PEAK_CHROMA,
-  COLOUR_FLOAT_DECIMAL_PRECISION,
+  THEME_PEAK_CHROMA_HEADROOM,
+  THEME_PEAK_LIGHTNESS,
+  THEME_SECONDARY_CHROMA_MULT,
+  THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
+  THEME_NEUTRAL_PEAK_CHROMA,
+  RGB_FLOAT_PRECISION,
 } from './constants';
 import { degToRad, clamp, quantize } from './numberUtils';
 
-export const okLChToOkLab = ({
-  L,
-  C,
-  h,
-}: {
-  L: number;
-  C: number;
-  h: number;
-}) => {
+export const oklchToOklab = ({ l, c, h }: TLchColorSpace): TLabColorSpace => {
   const radH = degToRad(h);
   return {
-    L,
-    a: Math.cos(radH) * C,
-    b: Math.sin(radH) * C,
+    l,
+    a: Math.cos(radH) * c,
+    b: Math.sin(radH) * c,
   };
 };
 
-export const okLabToXYZ = (Lab: { L: number; a: number; b: number }) => {
-  const okLabToLMS = ({ L, a, b }: { L: number; a: number; b: number }) => ({
-    L: (L + 0.3963377774 * a + 0.2158037573 * b) ** 3,
-    M: (L - 0.1055613458 * a - 0.0638541728 * b) ** 3,
-    S: (L - 0.0894841775 * a - 1.291485548 * b) ** 3,
+export const oklabToXyz = (lab: TLabColorSpace): TXyzColorSpace => {
+  const oklabToLms = ({ l, a, b }: TLabColorSpace): TLmsColorSpace => ({
+    l: (l + 0.3963377774 * a + 0.2158037573 * b) ** 3,
+    m: (l - 0.1055613458 * a - 0.0638541728 * b) ** 3,
+    s: (l - 0.0894841775 * a - 1.291485548 * b) ** 3,
   });
 
-  const { L, M, S } = okLabToLMS(Lab);
+  const { l, m, s } = oklabToLms(lab);
 
   return {
-    X: 1.2270138511 * L - 0.5577999807 * M + 0.2812561489 * S,
-    Y: -0.0405801784 * L + 1.1122568696 * M - 0.0716766787 * S,
-    Z: -0.0763812845 * L - 0.4214819784 * M + 1.5861632204 * S,
+    x: 1.2270138511 * l - 0.5577999807 * m + 0.2812561489 * s,
+    y: -0.0405801784 * l + 1.1122568696 * m - 0.0716766787 * s,
+    z: -0.0763812845 * l - 0.4214819784 * m + 1.5861632204 * s,
   };
 };
 
-export const XYZToRGB = (
+export const xyzToRgb = (
   matrix: number[][],
-  { X, Y, Z }: { X: number; Y: number; Z: number }
-) => ({
-  r: matrix[0][0] * X + matrix[0][1] * Y + matrix[0][2] * Z,
-  g: matrix[1][0] * X + matrix[1][1] * Y + matrix[1][2] * Z,
-  b: matrix[2][0] * X + matrix[2][1] * Y + matrix[2][2] * Z,
+  { x, y, z }: TXyzColorSpace
+): TRgbColorSpace => ({
+  r: matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z,
+  g: matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z,
+  b: matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z,
 });
 
-export const XYZToLinearSRGB = (XYZ: { X: number; Y: number; Z: number }) =>
-  XYZToRGB(
+export const xyzToLinearSrgb = (xyz: TXyzColorSpace): TRgbColorSpace =>
+  xyzToRgb(
     [
       [3.2404542, -1.5371385, -0.4985314],
       [-0.969266, 1.8760108, 0.041556],
       [0.0556434, -0.2040259, 1.0572252],
     ],
-    XYZ
+    xyz
   );
 
-export const XYZToLinearDisplayP3 = (XYZ: {
-  X: number;
-  Y: number;
-  Z: number;
-}) =>
-  XYZToRGB(
+export const xyzToLinearDispP3 = (xyz: TXyzColorSpace): TRgbColorSpace =>
+  xyzToRgb(
     [
       [2.493496911941425, -0.9313836179191239, -0.40271078445071684],
       [-0.8294889695615747, 1.7626640603183463, 0.023624685841943577],
       [0.0358458302437845, -0.0763812845057069, 0.9570942811736457],
     ],
-    XYZ
+    xyz
   );
 
-export const gammaCorrectRGB = (linearRGB: {
-  r: number;
-  g: number;
-  b: number;
-}) => {
+export const gammaCorrectRGB = (linearRGB: TRgbColorSpace): TRgbColorSpace => {
   return Object.fromEntries(
     Object.entries(linearRGB).map(([key, value]) => [
       key,
@@ -96,35 +81,19 @@ export const gammaCorrectRGB = (linearRGB: {
         ? 12.92 * value
         : 1.055 * Math.pow(value, 1 / 2.4) - 0.055,
     ])
-  ) as {
-    r: number;
-    g: number;
-    b: number;
-  };
+  ) as TRgbColorSpace;
 };
 
-export const clampRGB = (RGB: { r: number; g: number; b: number }) => {
+export const clampRGB = (RGB: TRgbColorSpace): TRgbColorSpace => {
   return Object.fromEntries(
     Object.entries(RGB).map(([key, value]) => [key, clamp(value, 0, 1)])
-  ) as {
-    r: number;
-    g: number;
-    b: number;
-  };
+  ) as TRgbColorSpace;
 };
 
-export const okLChToXYZ = (LCh: { L: number; C: number; h: number }) =>
-  okLabToXYZ(okLChToOkLab(LCh));
+export const oklchToXyz = (lch: TLchColorSpace): TXyzColorSpace =>
+  oklabToXyz(oklchToOklab(lch));
 
-export const normalizedRGBToHex = ({
-  r,
-  g,
-  b,
-}: {
-  r: number;
-  g: number;
-  b: number;
-}): string =>
+export const nomalRgbToHex = ({ r, g, b }: TRgbColorSpace): string =>
   [r, g, b]
     .map((value) =>
       Math.round(value * 255)
@@ -140,15 +109,9 @@ export const createPalette = (
   peakChroma: number,
   hue: number
 ) => {
-  console.log(swatchStep, peakLightness, peakChroma, hue);
   const total = 100 / swatchStep + 1;
 
-  const palette: {
-    okLCh: { L: number; C: number; h: number };
-    sRGB: { r: number; g: number; b: number };
-    displayP3: { r: number; g: number; b: number };
-    gamut: string;
-  }[] = [];
+  const palette: TSwatch[] = [];
 
   for (let n = 0; n < total; n++) {
     const lightness = quantize(n / (total - 1), LIGHTNESS_STEP);
@@ -161,26 +124,25 @@ export const createPalette = (
             (peakChroma / (1 - peakLightness)) * (1 - lightness),
             CHROMA_STEP
           );
-    const okLCh = { L: lightness, C: chroma, h: hue };
+    const oklch = { l: lightness, c: chroma, h: hue };
 
-    const XYZ = okLChToXYZ(okLCh);
+    const xyz = oklchToXyz(oklch);
 
-    const linearSRGB = XYZToLinearSRGB(XYZ);
-    const sRGB = gammaCorrectRGB(linearSRGB);
-    const clampedSRGB = clampRGB(sRGB);
-    const isSRGB = chroma === 0 || (sRGB.r <= 1 && sRGB.g <= 1 && sRGB.b <= 1);
+    const linearSrgb = xyzToLinearSrgb(xyz);
+    const sRgb = gammaCorrectRGB(linearSrgb);
+    const clampedSrgb = clampRGB(sRgb);
+    const isSRGB = chroma === 0 || (sRgb.r <= 1 && sRgb.g <= 1 && sRgb.b <= 1);
 
-    const linearDisplayP3 = XYZToLinearDisplayP3(XYZ);
-    const displayP3 = gammaCorrectRGB(linearDisplayP3);
-    const clampedDisplayP3 = clampRGB(displayP3);
+    const linearDispP3 = xyzToLinearDispP3(xyz);
+    const dispP3 = gammaCorrectRGB(linearDispP3);
+    const clampedDispP3 = clampRGB(dispP3);
     const isDisplayP3 =
-      chroma === 0 ||
-      (displayP3.r <= 1 && displayP3.g <= 1 && displayP3.b <= 1);
+      chroma === 0 || (dispP3.r <= 1 && dispP3.g <= 1 && dispP3.b <= 1);
 
     palette.push({
-      okLCh: okLCh,
-      sRGB: clampedSRGB,
-      displayP3: clampedDisplayP3,
+      oklch: oklch,
+      sRgb: clampedSrgb,
+      dispP3: clampedDispP3,
       gamut: isSRGB ? 'sRGB' : isDisplayP3 ? 'P3' : 'Rec2020',
     });
   }
@@ -223,11 +185,11 @@ export const peakChromaForLightnessAndHue = (
 
   while (high - low > CHROMA_STEP) {
     const mid = (low + high) / 2;
-    const xyz = okLChToXYZ({ L: peakLightness, C: mid, h: hue });
-    const linearDisplayP3 = XYZToLinearDisplayP3(xyz);
-    const displayP3 = gammaCorrectRGB(linearDisplayP3);
+    const xyz = oklchToXyz({ l: peakLightness, c: mid, h: hue });
+    const linearDispP3 = xyzToLinearDispP3(xyz);
+    const dispP3 = gammaCorrectRGB(linearDispP3);
 
-    if (displayP3.r <= 1 && displayP3.g <= 1 && displayP3.b <= 1) {
+    if (dispP3.r <= 1 && dispP3.g <= 1 && dispP3.b <= 1) {
       low = mid; // chroma can be higher
     } else {
       high = mid; // chroma must be lower

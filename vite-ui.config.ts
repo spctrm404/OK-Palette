@@ -2,9 +2,7 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
-// import plainText from 'vite-plugin-virtual-plain-text';
-
-// https://vitejs.dev/config/
+import plainText from 'vite-plugin-virtual-plain-text';
 export default defineConfig({
   plugins: [
     react(),
