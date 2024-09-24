@@ -7,6 +7,7 @@ import {
 } from 'react';
 import {
   mergeProps,
+  MoveMoveEvent,
   PressEvent,
   useFocus,
   useHover,
@@ -20,15 +21,15 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type planeCoordType = { x: number; y: number };
+type planeCoord = { x: number; y: number };
 
-type XYSlliderPropsType = {
-  value?: planeCoordType;
-  minValue?: planeCoordType;
-  maxValue?: planeCoordType;
-  step?: planeCoordType;
-  onChangeEnd?: (newNumbers: planeCoordType) => void;
-  onChange?: (newNumbers: planeCoordType) => void;
+type XYSlliderProps = {
+  value?: planeCoord;
+  minValue?: planeCoord;
+  maxValue?: planeCoord;
+  step?: planeCoord;
+  onChangeEnd?: (newNumbers: planeCoord) => void;
+  onChange?: (newNumbers: planeCoord) => void;
   isDisabled?: boolean;
   className?: string;
 };
@@ -43,7 +44,7 @@ const XYSlider = ({
   isDisabled = false,
   className = '',
   ...props
-}: XYSlliderPropsType) => {
+}: XYSlliderProps) => {
   const { theme } = useContext(ThemeContext);
 
   const [isDragging, setDragging] = useState(false);
@@ -55,7 +56,7 @@ const XYSlider = ({
 
   const positionRef = useRef({ x: 0, y: 0 });
 
-  const rootRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
 
@@ -72,16 +73,13 @@ const XYSlider = ({
     };
   }, []);
   const normalizedValue = useCallback(() => {
-    return (Object.keys(value) as (keyof planeCoordType)[]).reduce(
-      (acc, key) => {
-        acc[key] =
-          key === 'y'
-            ? 1 - (value[key] - minValue[key]) / (maxValue[key] - minValue[key])
-            : (value[key] - minValue[key]) / (maxValue[key] - minValue[key]);
-        return acc;
-      },
-      {} as planeCoordType
-    );
+    return (Object.keys(value) as (keyof planeCoord)[]).reduce((acc, key) => {
+      acc[key] =
+        key === 'y'
+          ? 1 - (value[key] - minValue[key]) / (maxValue[key] - minValue[key])
+          : (value[key] - minValue[key]) / (maxValue[key] - minValue[key]);
+      return acc;
+    }, {} as planeCoord);
   }, [minValue, maxValue, value]);
 
   const positionFromValue = useCallback(() => {
@@ -96,21 +94,22 @@ const XYSlider = ({
     };
   }, [normalizedValue]);
   const valueFromPosition = useCallback(() => {
-    return (
-      Object.keys(normalizedPosition()) as (keyof planeCoordType)[]
-    ).reduce((acc, key) => {
-      acc[key] =
-        normalizedPosition()[key] * (maxValue[key] - minValue[key]) +
-        minValue[key];
-      return acc;
-    }, {} as planeCoordType);
+    return (Object.keys(normalizedPosition()) as (keyof planeCoord)[]).reduce(
+      (acc, key) => {
+        acc[key] =
+          normalizedPosition()[key] * (maxValue[key] - minValue[key]) +
+          minValue[key];
+        return acc;
+      },
+      {} as planeCoord
+    );
   }, [minValue, maxValue, normalizedPosition]);
 
   const normalizedLastValue = useCallback(() => {
     const lastValue = lastValueRef.current;
     const lastMinValue = lastMinValueRef.current;
     const lastMaxValue = lastMaxValueRef.current;
-    return (Object.keys(lastValue) as (keyof planeCoordType)[]).reduce(
+    return (Object.keys(lastValue) as (keyof planeCoord)[]).reduce(
       (acc, key) => {
         acc[key] =
           key === 'y'
@@ -121,7 +120,7 @@ const XYSlider = ({
               (lastMaxValue[key] - lastMinValue[key]);
         return acc;
       },
-      {} as planeCoordType
+      {} as planeCoord
     );
   }, []);
   const positionFromLastValue = useCallback(() => {
@@ -137,26 +136,20 @@ const XYSlider = ({
   }, [normalizedLastValue]);
 
   const getClampedValue = useCallback(
-    (value: planeCoordType) => {
-      return (Object.keys(value) as (keyof planeCoordType)[]).reduce(
-        (acc, key) => {
-          acc[key] = clamp(value[key], minValue[key], maxValue[key]);
-          return acc;
-        },
-        {} as planeCoordType
-      );
+    (value: planeCoord) => {
+      return (Object.keys(value) as (keyof planeCoord)[]).reduce((acc, key) => {
+        acc[key] = clamp(value[key], minValue[key], maxValue[key]);
+        return acc;
+      }, {} as planeCoord);
     },
     [minValue, maxValue]
   );
   const getQuantizedValue = useCallback(
-    (value: planeCoordType) => {
-      return (Object.keys(value) as (keyof planeCoordType)[]).reduce(
-        (acc, key) => {
-          acc[key] = quantize(value[key], step[key]);
-          return acc;
-        },
-        {} as planeCoordType
-      );
+    (value: planeCoord) => {
+      return (Object.keys(value) as (keyof planeCoord)[]).reduce((acc, key) => {
+        acc[key] = quantize(value[key], step[key]);
+        return acc;
+      }, {} as planeCoord);
     },
     [step]
   );
@@ -204,7 +197,8 @@ const XYSlider = ({
   const onPressStart = useCallback(
     (e: PressEvent) => {
       const thumb = thumbRef.current;
-      thumb?.focus();
+      if (!thumb) return;
+      thumb.focus();
       setFocused(true);
       setDragging(true);
       const thumbRect = thumb?.getBoundingClientRect();
@@ -217,7 +211,7 @@ const XYSlider = ({
     [onChangeHandler]
   );
   const onMove = useCallback(
-    (e) => {
+    (e: MoveMoveEvent) => {
       if (e.pointerType === 'keyboard') clampPosition();
       positionRef.current.x += e.deltaX;
       positionRef.current.y += e.deltaY;
@@ -305,7 +299,8 @@ const XYSlider = ({
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    const onResizeHandler = (entries) => {
+    if (!root) return;
+    const onResizeHandler = (entries: ResizeObserverEntry[]) => {
       entries.forEach((anEntry) => {
         if (anEntry.target === root) {
           // console.log('resize');
@@ -334,11 +329,11 @@ const XYSlider = ({
         }
       });
     };
-    let resizeObserver = new ResizeObserver(onResizeHandler);
+    const resizeObserver = new ResizeObserver(onResizeHandler);
     resizeObserver.observe(root);
     return () => {
       resizeObserver.unobserve(root);
-      resizeObserver = null;
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -347,10 +342,12 @@ const XYSlider = ({
       className={cx('xyslider', 'xyslider__root', className)}
       {...(isDisabled && { 'data-disabled': 'true' })}
       data-theme={theme}
-      style={{
-        '--normalized-val-x': normalizedValue().x,
-        '--normalized-val-y': normalizedValue().y,
-      }}
+      style={
+        {
+          '--normalized-val-x': normalizedValue().x,
+          '--normalized-val-y': normalizedValue().y,
+        } as React.CSSProperties
+      }
       {...props}
       ref={rootRef}
     >

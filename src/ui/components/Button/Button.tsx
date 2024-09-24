@@ -6,7 +6,7 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type ButtonPropsType = {
+type ButtonProps = {
   buttontype?: 'text' | 'outlined' | 'elevated' | 'tonal' | 'filled';
   materialIcon?: string;
   text?: string;
@@ -21,7 +21,7 @@ const Button = ({
   onPress = () => {},
   className = '',
   ...props
-}: ButtonPropsType) => {
+}: ButtonProps) => {
   const { theme } = useContext(ThemeContext);
 
   const onPressHandler = useCallback(() => {

@@ -6,7 +6,7 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type SwitchPropsType = {
+type SwitchProps = {
   materialIcon?: string;
   materialIconAlt?: string;
   isSelected?: boolean;
@@ -21,7 +21,7 @@ const Switch = ({
   onChange = () => {},
   className = '',
   ...props
-}: SwitchPropsType) => {
+}: SwitchProps) => {
   const { theme } = useContext(ThemeContext);
 
   const id = useId();

@@ -6,7 +6,7 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type ToggleButtonPropsType = {
+type ToggleButtonProps = {
   buttontype?: 'standard' | 'outlined' | 'tonal' | 'filled';
   materialIcon?: string;
   materialIconAlt?: string;
@@ -23,7 +23,7 @@ const ToggleButton = ({
   onChange = () => {},
   className = '',
   ...props
-}: ToggleButtonPropsType) => {
+}: ToggleButtonProps) => {
   const { theme } = useContext(ThemeContext);
 
   const onChangeHandler = useCallback(

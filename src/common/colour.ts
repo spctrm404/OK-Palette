@@ -1,10 +1,10 @@
 import {
-  lchColorSpaceType,
-  labColorSpaceType,
-  lmsColorSpaceType,
-  xyzColorSpaceType,
-  rgbColorSpaceType,
-  swatchType,
+  LchColorSpace,
+  LabColorSpace,
+  LmsColorSpace,
+  XyzColorSpace,
+  RgbColorSpace,
+  Swatch,
 } from './types';
 import {
   LIGHTNESS_STEP,
@@ -19,11 +19,7 @@ import {
 } from './constants';
 import { degToRad, clamp, quantize } from './numberUtils';
 
-export const oklchToOklab = ({
-  l,
-  c,
-  h,
-}: lchColorSpaceType): labColorSpaceType => {
+export const oklchToOklab = ({ l, c, h }: LchColorSpace): LabColorSpace => {
   const radH = degToRad(h);
   return {
     l,
@@ -32,8 +28,8 @@ export const oklchToOklab = ({
   };
 };
 
-export const oklabToXyz = (lab: labColorSpaceType): xyzColorSpaceType => {
-  const oklabToLms = ({ l, a, b }: labColorSpaceType): lmsColorSpaceType => ({
+export const oklabToXyz = (lab: LabColorSpace): XyzColorSpace => {
+  const oklabToLms = ({ l, a, b }: LabColorSpace): LmsColorSpace => ({
     l: (l + 0.3963377774 * a + 0.2158037573 * b) ** 3,
     m: (l - 0.1055613458 * a - 0.0638541728 * b) ** 3,
     s: (l - 0.0894841775 * a - 1.291485548 * b) ** 3,
@@ -50,14 +46,14 @@ export const oklabToXyz = (lab: labColorSpaceType): xyzColorSpaceType => {
 
 export const xyzToRgb = (
   matrix: number[][],
-  { x, y, z }: xyzColorSpaceType
-): rgbColorSpaceType => ({
+  { x, y, z }: XyzColorSpace
+): RgbColorSpace => ({
   r: matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z,
   g: matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z,
   b: matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z,
 });
 
-export const xyzToLinearSrgb = (xyz: xyzColorSpaceType): rgbColorSpaceType =>
+export const xyzToLinearSrgb = (xyz: XyzColorSpace): RgbColorSpace =>
   xyzToRgb(
     [
       [3.2404542, -1.5371385, -0.4985314],
@@ -67,7 +63,7 @@ export const xyzToLinearSrgb = (xyz: xyzColorSpaceType): rgbColorSpaceType =>
     xyz
   );
 
-export const xyzToLinearDispP3 = (xyz: xyzColorSpaceType): rgbColorSpaceType =>
+export const xyzToLinearDispP3 = (xyz: XyzColorSpace): RgbColorSpace =>
   xyzToRgb(
     [
       [2.493496911941425, -0.9313836179191239, -0.40271078445071684],
@@ -77,9 +73,7 @@ export const xyzToLinearDispP3 = (xyz: xyzColorSpaceType): rgbColorSpaceType =>
     xyz
   );
 
-export const gammaCorrectRGB = (
-  linearRGB: rgbColorSpaceType
-): rgbColorSpaceType => {
+export const gammaCorrectRGB = (linearRGB: RgbColorSpace): RgbColorSpace => {
   return Object.fromEntries(
     Object.entries(linearRGB).map(([key, value]) => [
       key,
@@ -87,19 +81,19 @@ export const gammaCorrectRGB = (
         ? 12.92 * value
         : 1.055 * Math.pow(value, 1 / 2.4) - 0.055,
     ])
-  ) as rgbColorSpaceType;
+  ) as RgbColorSpace;
 };
 
-export const clampRGB = (RGB: rgbColorSpaceType): rgbColorSpaceType => {
+export const clampRGB = (RGB: RgbColorSpace): RgbColorSpace => {
   return Object.fromEntries(
     Object.entries(RGB).map(([key, value]) => [key, clamp(value, 0, 1)])
-  ) as rgbColorSpaceType;
+  ) as RgbColorSpace;
 };
 
-export const oklchToXyz = (lch: lchColorSpaceType): xyzColorSpaceType =>
+export const oklchToXyz = (lch: LchColorSpace): XyzColorSpace =>
   oklabToXyz(oklchToOklab(lch));
 
-export const nomalRgbToHex = ({ r, g, b }: rgbColorSpaceType): string =>
+export const nomalRgbToHex = ({ r, g, b }: RgbColorSpace): string =>
   [r, g, b]
     .map((value) =>
       Math.round(value * 255)
@@ -117,7 +111,7 @@ export const createPalette = (
 ) => {
   const total = 100 / swatchStep + 1;
 
-  const palette: swatchType[] = [];
+  const palette: Swatch[] = [];
 
   for (let n = 0; n < total; n++) {
     const lightness = quantize(n / (total - 1), LIGHTNESS_STEP);
@@ -160,7 +154,7 @@ export const hueForLightness = (
   lightness: number,
   { from: hueFrom, to: hueTo }: { from: number; to: number }
 ): number => {
-  const hueDiff = hueFrom < hueTo ? hueTo - hueFrom : hueTo + 360 - hueFrom;
+  const hueDiff = hueFrom <= hueTo ? hueTo - hueFrom : hueTo + 360 - hueFrom;
   return (hueFrom + lightness * hueDiff) % 360;
 };
 

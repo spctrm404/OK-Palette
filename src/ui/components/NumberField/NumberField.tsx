@@ -11,7 +11,7 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type NumberFieldPropsType = {
+type NumberFieldProps = {
   minValue?: number;
   maxValue?: number;
   step?: number;
@@ -19,6 +19,7 @@ type NumberFieldPropsType = {
   onChange?: (newNumber: number) => void;
   isWheelDisabled?: boolean;
   className?: string;
+  isDisabled?: boolean;
 };
 
 const NumberField = ({
@@ -30,7 +31,7 @@ const NumberField = ({
   isWheelDisabled = true,
   className = '',
   ...props
-}: NumberFieldPropsType) => {
+}: NumberFieldProps) => {
   const { theme } = useContext(ThemeContext);
 
   const innerValueRef = useRef(value);

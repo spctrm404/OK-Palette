@@ -1,4 +1,4 @@
-import { createPalette, normalizedRGBToHex } from '../common/colour';
+import { createPalette, nomalRgbToHex } from '../common/colour';
 import { quantize } from '../common/numberUtils';
 
 const PALETTE_PX = 48;
@@ -76,7 +76,7 @@ figma.ui.onmessage = async (msg: {
       swatchFrame.x = PALETTE_PX + idx * (SWATCH_W + PALETTE_GX);
       swatchFrame.y = PALETTE_PY;
       swatchFrame.resize(SWATCH_W, SWATCH_H);
-      swatchFrame.fills = [{ type: 'SOLID', color: aPalette.displayP3 }];
+      swatchFrame.fills = [{ type: 'SOLID', color: aPalette.dispP3 }];
 
       const infoFrame = figma.createFrame();
       swatchFrame.appendChild(infoFrame);
@@ -141,21 +141,21 @@ figma.ui.onmessage = async (msg: {
       });
 
       okLChText.name = 'oklch';
-      okLChText.characters = `oklch(${aPalette.okLCh.L} ${aPalette.okLCh.C} ${aPalette.okLCh.h})`;
+      okLChText.characters = `oklch(${aPalette.oklch.l} ${aPalette.oklch.c} ${aPalette.oklch.h})`;
 
       p3RGBText.name = 'displayP3-rgb';
       p3RGBText.fontName = { family: 'Martian Mono', style: 'Regular' };
       p3RGBText.characters = `color(display-p3
-  ${quantize(aPalette.displayP3.r, 0.000001)}
-  ${quantize(aPalette.displayP3.g, 0.000001)}
-  ${quantize(aPalette.displayP3.b, 0.000001)}
+  ${quantize(aPalette.dispP3.r, 0.000001)}
+  ${quantize(aPalette.dispP3.g, 0.000001)}
+  ${quantize(aPalette.dispP3.b, 0.000001)}
 )`;
 
       sRGBHexText.name = 'sRGB-hex';
-      sRGBHexText.characters = `sRGB: #${normalizedRGBToHex(aPalette.sRGB)}`;
+      sRGBHexText.characters = `sRGB: #${nomalRgbToHex(aPalette.sRgb)}`;
 
       p3HexText.name = 'displayP3-hex';
-      p3HexText.characters = `P3:   #${normalizedRGBToHex(aPalette.displayP3)}`;
+      p3HexText.characters = `P3:   #${nomalRgbToHex(aPalette.dispP3)}`;
 
       gamutText.name = 'gamut';
       gamutText.characters = aPalette.gamut;

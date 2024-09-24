@@ -10,7 +10,7 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type SliderPropsType = {
+type SliderProps = {
   minValue?: number;
   maxValue?: number;
   step?: number;
@@ -18,6 +18,7 @@ type SliderPropsType = {
   onChangeEnd?: (newNumber: number) => void;
   onChange?: (newNumber: number) => void;
   className?: string;
+  isDisabled?: boolean;
 };
 
 const Slider = ({
@@ -29,7 +30,7 @@ const Slider = ({
   onChange = () => {},
   className = '',
   ...props
-}: SliderPropsType) => {
+}: SliderProps) => {
   const { theme } = useContext(ThemeContext);
 
   const onChangeEndHandler = useCallback(

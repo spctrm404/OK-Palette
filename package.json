@@ -4,6 +4,7 @@
   "description": "A Figma plugin that generates tonal palettes based on the okLCh color space.",
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "build-backend": "vite build --config vite-backend.config.ts",
     "build-ui": "vite build --config vite-ui.config.ts"
   },

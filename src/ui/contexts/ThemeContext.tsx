@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { lightnessTableType } from '../../common/types';
+import { LightnessTable } from '../../common/types';
 import {
   THEME_PEAK_LIGHTNESS,
   CHROMA_STEP,
@@ -192,7 +192,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const applyStaticHueCssProperties = useCallback(
     (
-      lightnessTable: lightnessTableType,
+      lightnessTable: LightnessTable,
       name: string,
       peakChroma: number,
       hue: number,
@@ -226,7 +226,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const applyDynamicHueCssProperties = useCallback(
     (
-      lightnessTable: lightnessTableType,
+      lightnessTable: LightnessTable,
       name: string,
       peakChroma: number,
       chromaMultiplier: number,
