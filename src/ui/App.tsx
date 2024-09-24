@@ -20,7 +20,7 @@ import { ThemeContext } from './contexts/ThemeContext';
 import { useContext, useState } from 'react';
 import './_App.scss';
 import Button from './components/Button/Button';
-import NumberField from './components/NumberField/NumberField';
+import NumberFieldPropsType from './components/NumberField/NumberField';
 import Slider from './components/Slider/Slider';
 import Switch from './components/Switch/Switch';
 import st from './_App.module.scss';

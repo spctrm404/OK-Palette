@@ -5,13 +5,33 @@ import {
   useRef,
   useState,
 } from 'react';
-import { mergeProps, useFocus, useHover, useMove, usePress } from 'react-aria';
-import { clamp, closestQuantized } from '../../utils/numberUtils.js';
-import { ThemeContext } from '../../context/ThemeContext.jsx';
+import {
+  mergeProps,
+  PressEvent,
+  useFocus,
+  useHover,
+  useMove,
+  usePress,
+} from 'react-aria';
+import { clamp, quantize } from '../../../common/numberUtils';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_XYSlider.module.scss';
 import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
+
+type planeCoordType = { x: number; y: number };
+
+type XYSlliderPropsType = {
+  value?: planeCoordType;
+  minValue?: planeCoordType;
+  maxValue?: planeCoordType;
+  step?: planeCoordType;
+  onChangeEnd?: (newNumbers: planeCoordType) => void;
+  onChange?: (newNumbers: planeCoordType) => void;
+  isDisabled?: boolean;
+  className?: string;
+};
 
 const XYSlider = ({
   value = { x: 50, y: 50 },
@@ -23,7 +43,7 @@ const XYSlider = ({
   isDisabled = false,
   className = '',
   ...props
-}) => {
+}: XYSlliderPropsType) => {
   const { theme } = useContext(ThemeContext);
 
   const [isDragging, setDragging] = useState(false);
@@ -36,12 +56,15 @@ const XYSlider = ({
   const positionRef = useRef({ x: 0, y: 0 });
 
   const rootRef = useRef(null);
-  const trackRef = useRef(null);
-  const thumbRef = useRef(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
 
   const normalizedPosition = useCallback(() => {
-    const trackRect = trackRef.current.getBoundingClientRect();
-    const thumbRect = thumbRef.current.getBoundingClientRect();
+    const trackRect = trackRef.current?.getBoundingClientRect();
+    const thumbRect = thumbRef.current?.getBoundingClientRect();
+    if (!trackRect || !thumbRect) {
+      return { x: 0, y: 0 };
+    }
     const position = positionRef.current;
     return {
       x: (position.x + 0.5 * thumbRect.width) / trackRect.width,
@@ -49,50 +72,64 @@ const XYSlider = ({
     };
   }, []);
   const normalizedValue = useCallback(() => {
-    return Object.keys(value).reduce((acc, key) => {
-      acc[key] =
-        key === 'y'
-          ? 1 - (value[key] - minValue[key]) / (maxValue[key] - minValue[key])
-          : (value[key] - minValue[key]) / (maxValue[key] - minValue[key]);
-      return acc;
-    }, {});
+    return (Object.keys(value) as (keyof planeCoordType)[]).reduce(
+      (acc, key) => {
+        acc[key] =
+          key === 'y'
+            ? 1 - (value[key] - minValue[key]) / (maxValue[key] - minValue[key])
+            : (value[key] - minValue[key]) / (maxValue[key] - minValue[key]);
+        return acc;
+      },
+      {} as planeCoordType
+    );
   }, [minValue, maxValue, value]);
 
   const positionFromValue = useCallback(() => {
-    const trackRect = trackRef.current.getBoundingClientRect();
-    const thumbRect = thumbRef.current.getBoundingClientRect();
+    const trackRect = trackRef.current?.getBoundingClientRect();
+    const thumbRect = thumbRef.current?.getBoundingClientRect();
+    if (!trackRect || !thumbRect) {
+      return { x: 0, y: 0 };
+    }
     return {
       x: normalizedValue().x * trackRect.width - 0.5 * thumbRect.width,
       y: normalizedValue().y * trackRect.height - 0.5 * thumbRect.height,
     };
   }, [normalizedValue]);
   const valueFromPosition = useCallback(() => {
-    return Object.keys(normalizedPosition()).reduce((acc, key) => {
+    return (
+      Object.keys(normalizedPosition()) as (keyof planeCoordType)[]
+    ).reduce((acc, key) => {
       acc[key] =
         normalizedPosition()[key] * (maxValue[key] - minValue[key]) +
         minValue[key];
       return acc;
-    }, {});
+    }, {} as planeCoordType);
   }, [minValue, maxValue, normalizedPosition]);
 
   const normalizedLastValue = useCallback(() => {
     const lastValue = lastValueRef.current;
     const lastMinValue = lastMinValueRef.current;
     const lastMaxValue = lastMaxValueRef.current;
-    return Object.keys(lastValue).reduce((acc, key) => {
-      acc[key] =
-        key === 'y'
-          ? 1 -
-            (lastValue[key] - lastMinValue[key]) /
-              (lastMaxValue[key] - lastMinValue[key])
-          : (lastValue[key] - lastMinValue[key]) /
-            (lastMaxValue[key] - lastMinValue[key]);
-      return acc;
-    }, {});
+    return (Object.keys(lastValue) as (keyof planeCoordType)[]).reduce(
+      (acc, key) => {
+        acc[key] =
+          key === 'y'
+            ? 1 -
+              (lastValue[key] - lastMinValue[key]) /
+                (lastMaxValue[key] - lastMinValue[key])
+            : (lastValue[key] - lastMinValue[key]) /
+              (lastMaxValue[key] - lastMinValue[key]);
+        return acc;
+      },
+      {} as planeCoordType
+    );
   }, []);
   const positionFromLastValue = useCallback(() => {
-    const trackRect = trackRef.current.getBoundingClientRect();
-    const thumbRect = thumbRef.current.getBoundingClientRect();
+    const trackRect = trackRef.current?.getBoundingClientRect();
+    const thumbRect = thumbRef.current?.getBoundingClientRect();
+    if (!trackRect || !thumbRect) {
+      return { x: 0, y: 0 };
+    }
     return {
       x: normalizedLastValue().x * trackRect.width - 0.5 * thumbRect.width,
       y: normalizedLastValue().y * trackRect.height - 0.5 * thumbRect.height,
@@ -100,27 +137,36 @@ const XYSlider = ({
   }, [normalizedLastValue]);
 
   const getClampedValue = useCallback(
-    (value) => {
-      return Object.keys(value).reduce((acc, key) => {
-        acc[key] = clamp(value[key], minValue[key], maxValue[key]);
-        return acc;
-      }, {});
+    (value: planeCoordType) => {
+      return (Object.keys(value) as (keyof planeCoordType)[]).reduce(
+        (acc, key) => {
+          acc[key] = clamp(value[key], minValue[key], maxValue[key]);
+          return acc;
+        },
+        {} as planeCoordType
+      );
     },
     [minValue, maxValue]
   );
   const getQuantizedValue = useCallback(
-    (value) => {
-      return Object.keys(value).reduce((acc, key) => {
-        acc[key] = closestQuantized(value[key], step[key]);
-        return acc;
-      }, {});
+    (value: planeCoordType) => {
+      return (Object.keys(value) as (keyof planeCoordType)[]).reduce(
+        (acc, key) => {
+          acc[key] = quantize(value[key], step[key]);
+          return acc;
+        },
+        {} as planeCoordType
+      );
     },
     [step]
   );
 
   const clampPosition = useCallback(() => {
-    const trackRect = trackRef.current.getBoundingClientRect();
-    const thumbRect = thumbRef.current.getBoundingClientRect();
+    const trackRect = trackRef.current?.getBoundingClientRect();
+    const thumbRect = thumbRef.current?.getBoundingClientRect();
+    if (!trackRect || !thumbRect) {
+      return { x: 0, y: 0 };
+    }
     positionRef.current = {
       x: clamp(
         positionRef.current.x,
@@ -156,12 +202,12 @@ const XYSlider = ({
   }, [onChange, valueFromPosition, getClampedValue, getQuantizedValue]);
 
   const onPressStart = useCallback(
-    (e) => {
+    (e: PressEvent) => {
       const thumb = thumbRef.current;
-      thumb.focus();
+      thumb?.focus();
       setFocused(true);
       setDragging(true);
-      const thumbRect = thumb.getBoundingClientRect();
+      const thumbRect = thumb?.getBoundingClientRect();
       positionRef.current = {
         x: e.x - 0.5 * thumbRect.width,
         y: e.y - 0.5 * thumbRect.height,

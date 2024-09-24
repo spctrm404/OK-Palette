@@ -1,28 +1,27 @@
 import { useCallback, useContext, useId } from 'react';
 import { Switch as AriaSwitch } from 'react-aria-components';
-import { ThemeContext } from '../../contexts/ThemeContext.js';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Switch.module.scss';
 import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-// Props 타입 정의
-interface SwitchProps {
+type SwitchPropsType = {
   materialIcon?: string;
   materialIconAlt?: string;
   isSelected?: boolean;
   onChange?: (newBoolean: boolean) => void;
   className?: string;
-}
+};
 
-const Switch: React.FC<SwitchProps> = ({
+const Switch = ({
   materialIcon = '',
   materialIconAlt = '',
   isSelected = false,
   onChange = () => {},
   className = '',
   ...props
-}) => {
+}: SwitchPropsType) => {
   const { theme } = useContext(ThemeContext);
 
   const id = useId();

@@ -10,8 +10,7 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-// Props 타입 정의
-interface SliderProps {
+type SliderPropsType = {
   minValue?: number;
   maxValue?: number;
   step?: number;
@@ -19,9 +18,9 @@ interface SliderProps {
   onChangeEnd?: (newNumber: number) => void;
   onChange?: (newNumber: number) => void;
   className?: string;
-}
+};
 
-const Slider: React.FC<SliderProps> = ({
+const Slider = ({
   minValue = 0,
   maxValue = 100,
   step = 1,
@@ -30,7 +29,7 @@ const Slider: React.FC<SliderProps> = ({
   onChange = () => {},
   className = '',
   ...props
-}) => {
+}: SliderPropsType) => {
   const { theme } = useContext(ThemeContext);
 
   const onChangeEndHandler = useCallback(
@@ -61,7 +60,7 @@ const Slider: React.FC<SliderProps> = ({
       onChangeEnd={onChangeEndHandler}
       onChange={onChangeHandler}
       data-theme={theme}
-      style={{ '--normalized-val': normalizedValue() }}
+      style={{ '--normalized-val': normalizedValue() } as React.CSSProperties}
       {...props}
     >
       <AriaSliderTrack className={cx('slider__track', 'slider-track')}>

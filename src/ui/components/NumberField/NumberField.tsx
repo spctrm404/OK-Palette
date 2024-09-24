@@ -11,25 +11,26 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-// Props 타입 정의
-interface NumberFieldProps {
+type NumberFieldPropsType = {
   minValue?: number;
   maxValue?: number;
   step?: number;
   value?: number;
   onChange?: (newNumber: number) => void;
   isWheelDisabled?: boolean;
-}
+  className?: string;
+};
 
-const NumberField: React.FC<NumberFieldProps> = ({
+const NumberField = ({
   minValue = 0,
   maxValue = 100,
   step = 1,
   value = 50,
   onChange = () => {},
   isWheelDisabled = true,
+  className = '',
   ...props
-}) => {
+}: NumberFieldPropsType) => {
   const { theme } = useContext(ThemeContext);
 
   const innerValueRef = useRef(value);
@@ -88,7 +89,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
 
   return (
     <AriaNumberField
-      className={cx('number-field', 'number-field__root')}
+      className={cx('number-field', 'number-field__root', className)}
       minValue={minValue}
       maxValue={maxValue}
       step={step}
