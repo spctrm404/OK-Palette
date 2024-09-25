@@ -20,6 +20,7 @@ type NumberFieldProps = {
   isWheelDisabled?: boolean;
   className?: string;
   isDisabled?: boolean;
+  noButton?: boolean;
 };
 
 const NumberField = ({
@@ -29,6 +30,7 @@ const NumberField = ({
   value = 50,
   onChange = () => {},
   isWheelDisabled = true,
+  noButton = false,
   className = '',
   ...props
 }: NumberFieldProps) => {
@@ -100,6 +102,7 @@ const NumberField = ({
       onBlur={onBlurHandler}
       isWheelDisabled={isWheelDisabled}
       data-theme={theme}
+      {...(noButton && { 'data-no-button': noButton })}
       style={{ '--min-ch': digitLength() } as React.CSSProperties}
       {...props}
     >
@@ -120,28 +123,32 @@ const NumberField = ({
             'number-field-input-shape'
           )}
         />
-        <IconButton
-          className={cx(
-            'number-field__button',
-            'number-field__button--part-decrease',
-            'number-field-button-decrease'
-          )}
-          buttontype={'tonal'}
-          materialIcon={'remove'}
-          onPress={onPressHandler}
-          slot={'decrement'}
-        />
-        <IconButton
-          className={cx(
-            'number-field__button',
-            'number-field__button--part-increase',
-            'number-field-button-increase'
-          )}
-          buttontype={'tonal'}
-          materialIcon={'add'}
-          onPress={onPressHandler}
-          slot={'increment'}
-        />
+        {noButton || (
+          <>
+            <IconButton
+              className={cx(
+                'number-field__button',
+                'number-field__button--part-decrease',
+                'number-field-button-decrease'
+              )}
+              buttontype={'tonal'}
+              materialIcon={'remove'}
+              onPress={onPressHandler}
+              slot={'decrement'}
+            />
+            <IconButton
+              className={cx(
+                'number-field__button',
+                'number-field__button--part-increase',
+                'number-field-button-increase'
+              )}
+              buttontype={'tonal'}
+              materialIcon={'add'}
+              onPress={onPressHandler}
+              slot={'increment'}
+            />
+          </>
+        )}
       </AriaGroup>
     </AriaNumberField>
   );

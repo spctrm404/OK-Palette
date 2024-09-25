@@ -103,53 +103,6 @@ export const nomalRgbToHex = ({ r, g, b }: RgbColorSpace): string =>
     )
     .join('');
 
-export const createPalette = (
-  swatchStep: number,
-  peakLightness: number,
-  peakChroma: number,
-  hue: number
-) => {
-  const total = 100 / swatchStep + 1;
-
-  const palette: Swatch[] = [];
-
-  for (let n = 0; n < total; n++) {
-    const lightness = quantize(n / (total - 1), LIGHTNESS_STEP);
-    const chroma =
-      lightness === peakLightness
-        ? peakChroma
-        : lightness < peakLightness
-        ? quantize((peakChroma / peakLightness) * lightness, CHROMA_STEP)
-        : quantize(
-            (peakChroma / (1 - peakLightness)) * (1 - lightness),
-            CHROMA_STEP
-          );
-    const oklch = { l: lightness, c: chroma, h: hue };
-
-    const xyz = oklchToXyz(oklch);
-
-    const linearSrgb = xyzToLinearSrgb(xyz);
-    const sRgb = gammaCorrectRGB(linearSrgb);
-    const clampedSrgb = clampRGB(sRgb);
-    const isSRGB = chroma === 0 || (sRgb.r <= 1 && sRgb.g <= 1 && sRgb.b <= 1);
-
-    const linearDispP3 = xyzToLinearDispP3(xyz);
-    const dispP3 = gammaCorrectRGB(linearDispP3);
-    const clampedDispP3 = clampRGB(dispP3);
-    const isDisplayP3 =
-      chroma === 0 || (dispP3.r <= 1 && dispP3.g <= 1 && dispP3.b <= 1);
-
-    palette.push({
-      oklch: oklch,
-      sRgb: clampedSrgb,
-      dispP3: clampedDispP3,
-      gamut: isSRGB ? 'sRGB' : isDisplayP3 ? 'P3' : 'Rec2020',
-    });
-  }
-
-  return palette;
-};
-
 export const hueForLightness = (
   lightness: number,
   { from: hueFrom, to: hueTo }: { from: number; to: number }
@@ -168,7 +121,7 @@ export const chromaForLightness = (
       ? peakChroma * lightness
       : peakLightness === 0
       ? peakChroma * (1 - lightness)
-      : lightness < peakLightness
+      : lightness <= peakLightness
       ? (peakChroma / peakLightness) * lightness
       : (peakChroma / (1 - peakLightness)) * (1 - lightness);
   return chroma;
@@ -197,4 +150,47 @@ export const peakChromaForLightnessAndHue = (
   }
 
   return low;
+};
+
+export const createPalette = (
+  swatchStep: number,
+  peakLightness: number,
+  peakChroma: number,
+  hues: { from: number; to: number }
+) => {
+  const total = 100 / swatchStep + 1;
+
+  const palette: Swatch[] = [];
+
+  for (let n = 0; n < total; n++) {
+    const lightness = quantize(n / (total - 1), LIGHTNESS_STEP);
+    const chroma = quantize(
+      chromaForLightness(lightness, peakLightness, peakChroma),
+      CHROMA_STEP
+    );
+    const hue = hueForLightness(lightness, hues);
+    const oklch = { l: lightness, c: chroma, h: hue };
+
+    const xyz = oklchToXyz(oklch);
+
+    const linearSrgb = xyzToLinearSrgb(xyz);
+    const sRgb = gammaCorrectRGB(linearSrgb);
+    const clampedSrgb = clampRGB(sRgb);
+    const isSRGB = chroma === 0 || (sRgb.r <= 1 && sRgb.g <= 1 && sRgb.b <= 1);
+
+    const linearDispP3 = xyzToLinearDispP3(xyz);
+    const dispP3 = gammaCorrectRGB(linearDispP3);
+    const clampedDispP3 = clampRGB(dispP3);
+    const isDisplayP3 =
+      chroma === 0 || (dispP3.r <= 1 && dispP3.g <= 1 && dispP3.b <= 1);
+
+    palette.push({
+      oklch: oklch,
+      sRgb: clampedSrgb,
+      dispP3: clampedDispP3,
+      gamut: isSRGB ? 'sRGB' : isDisplayP3 ? 'P3' : 'Rec2020',
+    });
+  }
+
+  return palette;
 };

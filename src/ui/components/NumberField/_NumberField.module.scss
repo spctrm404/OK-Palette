@@ -25,6 +25,15 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     font-style: normal;
     font-weight: 400;
     line-height: $line-height;
+
+    &[data-no-button] {
+      grid-template-columns: minmax(
+        calc(var(--min-ch) * 1ch + 2 * $input-px),
+        1fr
+      );
+      min-width: calc(var(--min-ch) * 1ch + 2 * $input-px);
+      max-width: calc((var(--min-ch) + 2) * 1ch + 2 * $input-px);
+    }
   }
 
   &__group {
@@ -67,6 +76,10 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       }
     }
 
+    @at-root #{$root-selector}[data-no-button] #{&} {
+      grid-column: 1 / span 1;
+    }
+
     &__shape {
       position: relative;
       z-index: 1;
@@ -93,6 +106,10 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
             transparent
           );
         }
+      }
+
+      @at-root #{$root-selector}[data-no-button] #{&} {
+        grid-column: 1 / span 1;
       }
     }
 
@@ -127,6 +144,10 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       @at-root #{$parent-selector}[data-disabled] ~ #{&} {
         opacity: 0;
         transform: scale(0%, 100%);
+      }
+
+      @at-root #{$root-selector}[data-no-button] #{&} {
+        grid-column: 1 / span 1;
       }
     }
   }

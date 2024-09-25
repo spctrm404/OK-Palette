@@ -1,3 +1,9 @@
+import {
+  LIGHTNESS_STEP,
+  CHROMA_STEP,
+  HUE_STEP,
+  P3_CHROMA_LIMIT,
+} from '../common/constants';
 import { createPalette, nomalRgbToHex } from '../common/colour';
 import { quantize } from '../common/numberUtils';
 
@@ -26,14 +32,18 @@ const ensureFontLoaded = async () => {
   }
 };
 
-figma.showUI(__html__, { width: 400, height: 200 });
+figma.showUI(__html__, { width: 248, height: 800 });
+
+const colorSpace = figma.root.documentColorProfile;
+
+figma.ui.postMessage({ message: 'colorSpace', colorSpace });
 
 figma.ui.onmessage = async (msg: {
   type: string;
   swatchStep: number;
   peakLightness: number;
   peakChroma: number;
-  hue: number;
+  hues: { from: number; to: number };
 }) => {
   if (msg.type === 'create-palette') {
     await ensureFontLoaded();
@@ -42,14 +52,18 @@ figma.ui.onmessage = async (msg: {
       msg.swatchStep,
       msg.peakLightness,
       msg.peakChroma,
-      msg.hue
+      msg.hues
     );
 
     const nodes: SceneNode[] = [];
     const paletteFrame = figma.createFrame();
-    paletteFrame.name = `OKP-step${msg.swatchStep}-l${
-      100 * msg.peakLightness
-    }-c${100 * msg.peakChroma}-h${msg.hue}`;
+    paletteFrame.name = `OKP-step${msg.swatchStep}_l${quantize(
+      100 * msg.peakLightness,
+      1
+    )}_c${quantize(100 * msg.peakChroma, 0.1)}_h${quantize(
+      msg.hues.from,
+      1
+    )}-${quantize(msg.hues.to, 1)}`;
     const { x: centerX, y: centerY } = figma.viewport.center;
     paletteFrame.x = centerX;
     paletteFrame.y = centerY;
@@ -141,7 +155,13 @@ figma.ui.onmessage = async (msg: {
       });
 
       okLChText.name = 'oklch';
-      okLChText.characters = `oklch(${aPalette.oklch.l} ${aPalette.oklch.c} ${aPalette.oklch.h})`;
+      okLChText.characters = `oklch(${quantize(
+        aPalette.oklch.l,
+        LIGHTNESS_STEP
+      )} ${quantize(aPalette.oklch.c, CHROMA_STEP)} ${quantize(
+        aPalette.oklch.h,
+        HUE_STEP
+      )})`;
 
       p3RGBText.name = 'displayP3-rgb';
       p3RGBText.fontName = { family: 'Martian Mono', style: 'Regular' };

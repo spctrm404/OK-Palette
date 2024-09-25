@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import plainText from 'vite-plugin-virtual-plain-text';
+import fs from 'fs'; // Node.js 파일 시스템 모듈
+import path from 'path';
 export default defineConfig({
   plugins: [
     react(),
@@ -22,5 +24,28 @@ export default defineConfig({
   build: {
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: false,
+    rollupOptions: {
+      output: {
+        plugins: [
+          {
+            name: 'copy-to-root',
+            writeBundle(options, bundle) {
+              const rootOutputDir = path.resolve(__dirname, '.');
+              Object.keys(bundle).forEach((fileName) => {
+                const filePath = path.resolve(
+                  options.dir || __dirname,
+                  fileName
+                );
+                const destPath = path.resolve(rootOutputDir, fileName);
+
+                // 파일을 루트 폴더에 복사
+                fs.copyFileSync(filePath, destPath);
+                console.log(`Copied ${fileName} to root directory.`);
+              });
+            },
+          },
+        ],
+      },
+    },
   },
 });

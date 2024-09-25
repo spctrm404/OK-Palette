@@ -14,6 +14,7 @@ import {
   useMove,
   usePress,
 } from 'react-aria';
+import { PlaneCoord } from '../../../common/types';
 import { clamp, quantize } from '../../../common/numberUtils';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_XYSlider.module.scss';
@@ -21,15 +22,13 @@ import classNames from 'classnames/bind';
 
 const cx = classNames.bind(st);
 
-type planeCoord = { x: number; y: number };
-
 type XYSlliderProps = {
-  value?: planeCoord;
-  minValue?: planeCoord;
-  maxValue?: planeCoord;
-  step?: planeCoord;
-  onChangeEnd?: (newNumbers: planeCoord) => void;
-  onChange?: (newNumbers: planeCoord) => void;
+  value?: PlaneCoord;
+  minValue?: PlaneCoord;
+  maxValue?: PlaneCoord;
+  step?: PlaneCoord;
+  onChangeEnd?: (newNumbers: PlaneCoord) => void;
+  onChange?: (newNumbers: PlaneCoord) => void;
   isDisabled?: boolean;
   className?: string;
 };
@@ -73,13 +72,13 @@ const XYSlider = ({
     };
   }, []);
   const normalizedValue = useCallback(() => {
-    return (Object.keys(value) as (keyof planeCoord)[]).reduce((acc, key) => {
+    return (Object.keys(value) as (keyof PlaneCoord)[]).reduce((acc, key) => {
       acc[key] =
         key === 'y'
           ? 1 - (value[key] - minValue[key]) / (maxValue[key] - minValue[key])
           : (value[key] - minValue[key]) / (maxValue[key] - minValue[key]);
       return acc;
-    }, {} as planeCoord);
+    }, {} as PlaneCoord);
   }, [minValue, maxValue, value]);
 
   const positionFromValue = useCallback(() => {
@@ -94,14 +93,14 @@ const XYSlider = ({
     };
   }, [normalizedValue]);
   const valueFromPosition = useCallback(() => {
-    return (Object.keys(normalizedPosition()) as (keyof planeCoord)[]).reduce(
+    return (Object.keys(normalizedPosition()) as (keyof PlaneCoord)[]).reduce(
       (acc, key) => {
         acc[key] =
           normalizedPosition()[key] * (maxValue[key] - minValue[key]) +
           minValue[key];
         return acc;
       },
-      {} as planeCoord
+      {} as PlaneCoord
     );
   }, [minValue, maxValue, normalizedPosition]);
 
@@ -109,7 +108,7 @@ const XYSlider = ({
     const lastValue = lastValueRef.current;
     const lastMinValue = lastMinValueRef.current;
     const lastMaxValue = lastMaxValueRef.current;
-    return (Object.keys(lastValue) as (keyof planeCoord)[]).reduce(
+    return (Object.keys(lastValue) as (keyof PlaneCoord)[]).reduce(
       (acc, key) => {
         acc[key] =
           key === 'y'
@@ -120,7 +119,7 @@ const XYSlider = ({
               (lastMaxValue[key] - lastMinValue[key]);
         return acc;
       },
-      {} as planeCoord
+      {} as PlaneCoord
     );
   }, []);
   const positionFromLastValue = useCallback(() => {
@@ -136,20 +135,20 @@ const XYSlider = ({
   }, [normalizedLastValue]);
 
   const getClampedValue = useCallback(
-    (value: planeCoord) => {
-      return (Object.keys(value) as (keyof planeCoord)[]).reduce((acc, key) => {
+    (value: PlaneCoord) => {
+      return (Object.keys(value) as (keyof PlaneCoord)[]).reduce((acc, key) => {
         acc[key] = clamp(value[key], minValue[key], maxValue[key]);
         return acc;
-      }, {} as planeCoord);
+      }, {} as PlaneCoord);
     },
     [minValue, maxValue]
   );
   const getQuantizedValue = useCallback(
-    (value: planeCoord) => {
-      return (Object.keys(value) as (keyof planeCoord)[]).reduce((acc, key) => {
+    (value: PlaneCoord) => {
+      return (Object.keys(value) as (keyof PlaneCoord)[]).reduce((acc, key) => {
         acc[key] = quantize(value[key], step[key]);
         return acc;
-      }, {} as planeCoord);
+      }, {} as PlaneCoord);
     },
     [step]
   );

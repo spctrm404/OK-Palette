@@ -32,3 +32,5 @@ export type Swatch = {
 export type LightnessTable = {
   [key: string]: { light: number; dark: number };
 };
+
+export type PlaneCoord = { x: number; y: number };

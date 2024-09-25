@@ -1,37 +1,37 @@
-const O = (t) => t * Math.PI / 180, d = (t, n) => {
-  const e = (n.toString().split(".")[1] || "").length;
-  let c = Math.round(t / n) * n;
-  return c = parseFloat(c.toFixed(e)), c;
-}, L = (t, n, e) => Math.min(Math.max(t, n), e), H = ({ l: t, c: n, h: e }) => {
-  const c = O(e);
+const O = (t) => t * Math.PI / 180, l = (t, e) => {
+  const o = (e.toString().split(".")[1] || "").length;
+  let n = Math.round(t / e) * e;
+  return n = parseFloat(n.toFixed(o)), n;
+}, H = (t, e, o) => Math.min(Math.max(t, e), o), A = ({ l: t, c: e, h: o }) => {
+  const n = O(o);
   return {
     l: t,
-    a: Math.cos(c) * n,
-    b: Math.sin(c) * n
+    a: Math.cos(n) * e,
+    b: Math.sin(n) * e
   };
-}, A = (t) => {
-  const n = ({ l: s, a: r, b: o }) => ({
-    l: (s + 0.3963377774 * r + 0.2158037573 * o) ** 3,
-    m: (s - 0.1055613458 * r - 0.0638541728 * o) ** 3,
-    s: (s - 0.0894841775 * r - 1.291485548 * o) ** 3
-  }), { l: e, m: c, s: T } = n(t);
+}, C = (t) => {
+  const e = ({ l: s, a: i, b: c }) => ({
+    l: (s + 0.3963377774 * i + 0.2158037573 * c) ** 3,
+    m: (s - 0.1055613458 * i - 0.0638541728 * c) ** 3,
+    s: (s - 0.0894841775 * i - 1.291485548 * c) ** 3
+  }), { l: o, m: n, s: T } = e(t);
   return {
-    x: 1.2270138511 * e - 0.5577999807 * c + 0.2812561489 * T,
-    y: -0.0405801784 * e + 1.1122568696 * c - 0.0716766787 * T,
-    z: -0.0763812845 * e - 0.4214819784 * c + 1.5861632204 * T
+    x: 1.2270138511 * o - 0.5577999807 * n + 0.2812561489 * T,
+    y: -0.0405801784 * o + 1.1122568696 * n - 0.0716766787 * T,
+    z: -0.0763812845 * o - 0.4214819784 * n + 1.5861632204 * T
   };
-}, y = (t, { x: n, y: e, z: c }) => ({
-  r: t[0][0] * n + t[0][1] * e + t[0][2] * c,
-  g: t[1][0] * n + t[1][1] * e + t[1][2] * c,
-  b: t[2][0] * n + t[2][1] * e + t[2][2] * c
-}), C = (t) => y(
+}, F = (t, { x: e, y: o, z: n }) => ({
+  r: t[0][0] * e + t[0][1] * o + t[0][2] * n,
+  g: t[1][0] * e + t[1][1] * o + t[1][2] * n,
+  b: t[2][0] * e + t[2][1] * o + t[2][2] * n
+}), N = (t) => F(
   [
     [3.2404542, -1.5371385, -0.4985314],
     [-0.969266, 1.8760108, 0.041556],
     [0.0556434, -0.2040259, 1.0572252]
   ],
   t
-), X = (t) => y(
+), X = (t) => F(
   [
     [2.493496911941425, -0.9313836179191239, -0.40271078445071684],
     [-0.8294889695615747, 1.7626640603183463, 0.023624685841943577],
@@ -39,90 +39,107 @@ const O = (t) => t * Math.PI / 180, d = (t, n) => {
   ],
   t
 ), m = (t) => Object.fromEntries(
-  Object.entries(t).map(([n, e]) => [
-    n,
-    e <= 31308e-7 ? 12.92 * e : 1.055 * Math.pow(e, 0.4166666666666667) - 0.055
+  Object.entries(t).map(([e, o]) => [
+    e,
+    o <= 31308e-7 ? 12.92 * o : 1.055 * Math.pow(o, 0.4166666666666667) - 0.055
   ])
 ), I = (t) => Object.fromEntries(
-  Object.entries(t).map(([n, e]) => [n, L(e, 0, 1)])
-), N = (t) => A(H(t)), f = ({ r: t, g: n, b: e }) => [t, n, e].map(
-  (c) => Math.round(c * 255).toString(16).padStart(2, "0").toUpperCase()
-).join(""), b = (t, n, e, c) => {
+  Object.entries(t).map(([e, o]) => [e, H(o, 0, 1)])
+), b = (t) => C(A(t)), P = ({ r: t, g: e, b: o }) => [t, e, o].map(
+  (n) => Math.round(n * 255).toString(16).padStart(2, "0").toUpperCase()
+).join(""), M = (t, { from: e, to: o }) => {
+  const n = e <= o ? o - e : o + 360 - e;
+  return (e + t * n) % 360;
+}, R = (t, e, o) => e === 1 ? o * t : e === 0 ? o * (1 - t) : t <= e ? o / e * t : o / (1 - e) * (1 - t), D = (t, e, o, n) => {
   const T = 100 / t + 1, s = [];
-  for (let r = 0; r < T; r++) {
-    const o = d(r / (T - 1), 0.01), a = o === n ? e : o < n ? d(e / n * o, 1e-3) : d(
-      e / (1 - n) * (1 - o),
+  for (let i = 0; i < T; i++) {
+    const c = l(i / (T - 1), 0.01), a = l(
+      R(c, e, o),
       1e-3
-    ), i = { l: o, c: a, h: c }, h = N(i), g = C(h), p = m(g), S = I(p), E = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, _ = X(h), l = m(_), P = I(l), u = a === 0 || l.r <= 1 && l.g <= 1 && l.b <= 1;
+    ), r = M(c, n), S = { l: c, c: a, h: r }, h = b(S), d = N(h), p = m(d), E = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, g = X(h), f = m(g), u = I(f), L = a === 0 || f.r <= 1 && f.g <= 1 && f.b <= 1;
     s.push({
-      oklch: i,
-      sRgb: S,
-      dispP3: P,
-      gamut: E ? "sRGB" : u ? "P3" : "Rec2020"
+      oklch: S,
+      sRgb: E,
+      dispP3: u,
+      gamut: _ ? "sRGB" : L ? "P3" : "Rec2020"
     });
   }
   return s;
 };
-let F = !1;
-const R = async () => {
-  F || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), F = !0);
+let y = !1;
+const G = async () => {
+  y || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), y = !0);
 };
-figma.showUI(__html__, { width: 400, height: 200 });
+figma.showUI(__html__, { width: 248, height: 800 });
+const z = figma.root.documentColorProfile;
+figma.ui.postMessage({ message: "colorSpace", colorSpace: z });
 figma.ui.onmessage = async (t) => {
   if (t.type === "create-palette") {
-    await R();
-    const n = b(
+    await G();
+    const e = D(
       t.swatchStep,
       t.peakLightness,
       t.peakChroma,
-      t.hue
-    ), e = figma.createFrame();
-    e.name = `OKP-step${t.swatchStep}-l${100 * t.peakLightness}-c${100 * t.peakChroma}-h${t.hue}`;
-    const { x: c, y: T } = figma.viewport.center;
-    e.x = c, e.y = T, e.resize(
-      2 * 48 + n.length * 200 + (n.length - 1) * 24,
+      t.hues
+    ), o = figma.createFrame();
+    o.name = `OKP-step${t.swatchStep}_l${l(
+      100 * t.peakLightness,
+      1
+    )}_c${l(100 * t.peakChroma, 0.1)}_h${l(
+      t.hues.from,
+      1
+    )}-${l(t.hues.to, 1)}`;
+    const { x: n, y: T } = figma.viewport.center;
+    o.x = n, o.y = T, o.resize(
+      2 * 48 + e.length * 200 + (e.length - 1) * 24,
       2 * 48 + 200
-    ), e.fills = [
+    ), o.fills = [
       {
         type: "SOLID",
         color: { r: 1, g: 1, b: 1 }
       }
-    ], n.forEach((s, r) => {
-      const o = figma.createFrame();
-      e.appendChild(o), o.name = `Swatch-${r * t.swatchStep}`, o.layoutMode = "VERTICAL", o.layoutSizingHorizontal = "FIXED", o.layoutSizingVertical = "FIXED", o.x = 48 + r * 224, o.y = 48, o.resize(200, 200), o.fills = [{ type: "SOLID", color: s.dispP3 }];
+    ], e.forEach((s, i) => {
+      const c = figma.createFrame();
+      o.appendChild(c), c.name = `Swatch-${i * t.swatchStep}`, c.layoutMode = "VERTICAL", c.layoutSizingHorizontal = "FIXED", c.layoutSizingVertical = "FIXED", c.x = 48 + i * 224, c.y = 48, c.resize(200, 200), c.fills = [{ type: "SOLID", color: s.dispP3 }];
       const a = figma.createFrame();
-      o.appendChild(a), a.name = "info", a.layoutMode = "VERTICAL", a.layoutSizingHorizontal = "FILL", a.layoutSizingVertical = "FILL", a.paddingTop = 16, a.paddingBottom = 16, a.paddingLeft = 16, a.paddingRight = 16, a.itemSpacing = 4, a.fills = [];
-      const i = figma.createText();
-      o.appendChild(i), i.name = "#", i.fontName = { family: "Martian Mono", style: "Bold" }, i.fontSize = 56, i.lineHeight = { value: 56, unit: "PIXELS" }, i.characters = `${r * t.swatchStep}`, i.layoutPositioning = "ABSOLUTE", i.x = 200 - i.width + 16, i.y = 200 - i.height + 16, i.fills = [
+      c.appendChild(a), a.name = "info", a.layoutMode = "VERTICAL", a.layoutSizingHorizontal = "FILL", a.layoutSizingVertical = "FILL", a.paddingTop = 16, a.paddingBottom = 16, a.paddingLeft = 16, a.paddingRight = 16, a.itemSpacing = 4, a.fills = [];
+      const r = figma.createText();
+      c.appendChild(r), r.name = "#", r.fontName = { family: "Martian Mono", style: "Bold" }, r.fontSize = 56, r.lineHeight = { value: 56, unit: "PIXELS" }, r.characters = `${i * t.swatchStep}`, r.layoutPositioning = "ABSOLUTE", r.x = 200 - r.width + 16, r.y = 200 - r.height + 16, r.fills = [
         {
           type: "SOLID",
-          color: r < n.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
+          color: i < e.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
         }
       ];
-      const h = figma.createText();
-      a.appendChild(h);
-      const g = figma.createText();
-      a.appendChild(g);
-      const p = figma.createText();
-      a.appendChild(p);
       const S = figma.createText();
       a.appendChild(S);
+      const h = figma.createText();
+      a.appendChild(h);
+      const d = figma.createText();
+      a.appendChild(d);
+      const p = figma.createText();
+      a.appendChild(p);
       const E = figma.createText();
       a.appendChild(E), a.children.forEach((_) => {
         if (_.type === "TEXT") {
-          const l = _;
-          l.fontName = { family: "Martian Mono", style: "Regular" }, l.fontSize = 12, l.lineHeight = { value: 16, unit: "PIXELS" }, l.fills = [
+          const g = _;
+          g.fontName = { family: "Martian Mono", style: "Regular" }, g.fontSize = 12, g.lineHeight = { value: 16, unit: "PIXELS" }, g.fills = [
             {
               type: "SOLID",
-              color: r < n.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
+              color: i < e.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
             }
           ];
         }
-      }), h.name = "oklch", h.characters = `oklch(${s.oklch.l} ${s.oklch.c} ${s.oklch.h})`, g.name = "displayP3-rgb", g.fontName = { family: "Martian Mono", style: "Regular" }, g.characters = `color(display-p3
-  ${d(s.dispP3.r, 1e-6)}
-  ${d(s.dispP3.g, 1e-6)}
-  ${d(s.dispP3.b, 1e-6)}
-)`, p.name = "sRGB-hex", p.characters = `sRGB: #${f(s.sRgb)}`, S.name = "displayP3-hex", S.characters = `P3:   #${f(s.dispP3)}`, E.name = "gamut", E.characters = s.gamut;
-    }), figma.currentPage.appendChild(e);
+      }), S.name = "oklch", S.characters = `oklch(${l(
+        s.oklch.l,
+        0.01
+      )} ${l(s.oklch.c, 1e-3)} ${l(
+        s.oklch.h,
+        1
+      )})`, h.name = "displayP3-rgb", h.fontName = { family: "Martian Mono", style: "Regular" }, h.characters = `color(display-p3
+  ${l(s.dispP3.r, 1e-6)}
+  ${l(s.dispP3.g, 1e-6)}
+  ${l(s.dispP3.b, 1e-6)}
+)`, d.name = "sRGB-hex", d.characters = `sRGB: #${P(s.sRgb)}`, p.name = "displayP3-hex", p.characters = `P3:   #${P(s.dispP3)}`, E.name = "gamut", E.characters = s.gamut;
+    }), figma.currentPage.appendChild(o);
   }
 };
