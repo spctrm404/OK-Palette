@@ -2,7 +2,7 @@
   "compilerOptions": {
     "typeRoots": ["../../node_modules/@types", "../../node_modules/@figma"],
 
-    "target": "ES2022",
+    "target": "ES6",
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,

@@ -32,7 +32,7 @@ const ensureFontLoaded = async () => {
   }
 };
 
-figma.showUI(__html__, { width: 248, height: 800 });
+figma.showUI(__html__, { themeColors: true, width: 248, height: 800 });
 
 const colorSpace = figma.root.documentColorProfile;
 

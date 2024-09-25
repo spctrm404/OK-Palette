@@ -2,14 +2,14 @@ const O = (t) => t * Math.PI / 180, l = (t, e) => {
   const o = (e.toString().split(".")[1] || "").length;
   let n = Math.round(t / e) * e;
   return n = parseFloat(n.toFixed(o)), n;
-}, H = (t, e, o) => Math.min(Math.max(t, e), o), A = ({ l: t, c: e, h: o }) => {
+}, H = (t, e, o) => Math.min(Math.max(t, e), o), C = ({ l: t, c: e, h: o }) => {
   const n = O(o);
   return {
     l: t,
     a: Math.cos(n) * e,
     b: Math.sin(n) * e
   };
-}, C = (t) => {
+}, A = (t) => {
   const e = ({ l: s, a: i, b: c }) => ({
     l: (s + 0.3963377774 * i + 0.2158037573 * c) ** 3,
     m: (s - 0.1055613458 * i - 0.0638541728 * c) ** 3,
@@ -20,32 +20,32 @@ const O = (t) => t * Math.PI / 180, l = (t, e) => {
     y: -0.0405801784 * o + 1.1122568696 * n - 0.0716766787 * T,
     z: -0.0763812845 * o - 0.4214819784 * n + 1.5861632204 * T
   };
-}, F = (t, { x: e, y: o, z: n }) => ({
+}, y = (t, { x: e, y: o, z: n }) => ({
   r: t[0][0] * e + t[0][1] * o + t[0][2] * n,
   g: t[1][0] * e + t[1][1] * o + t[1][2] * n,
   b: t[2][0] * e + t[2][1] * o + t[2][2] * n
-}), N = (t) => F(
+}), N = (t) => y(
   [
     [3.2404542, -1.5371385, -0.4985314],
     [-0.969266, 1.8760108, 0.041556],
     [0.0556434, -0.2040259, 1.0572252]
   ],
   t
-), X = (t) => F(
+), X = (t) => y(
   [
     [2.493496911941425, -0.9313836179191239, -0.40271078445071684],
     [-0.8294889695615747, 1.7626640603183463, 0.023624685841943577],
     [0.0358458302437845, -0.0763812845057069, 0.9570942811736457]
   ],
   t
-), m = (t) => Object.fromEntries(
+), f = (t) => Object.fromEntries(
   Object.entries(t).map(([e, o]) => [
     e,
     o <= 31308e-7 ? 12.92 * o : 1.055 * Math.pow(o, 0.4166666666666667) - 0.055
   ])
 ), I = (t) => Object.fromEntries(
   Object.entries(t).map(([e, o]) => [e, H(o, 0, 1)])
-), b = (t) => C(A(t)), P = ({ r: t, g: e, b: o }) => [t, e, o].map(
+), b = (t) => A(C(t)), P = ({ r: t, g: e, b: o }) => [t, e, o].map(
   (n) => Math.round(n * 255).toString(16).padStart(2, "0").toUpperCase()
 ).join(""), M = (t, { from: e, to: o }) => {
   const n = e <= o ? o - e : o + 360 - e;
@@ -56,21 +56,21 @@ const O = (t) => t * Math.PI / 180, l = (t, e) => {
     const c = l(i / (T - 1), 0.01), a = l(
       R(c, e, o),
       1e-3
-    ), r = M(c, n), S = { l: c, c: a, h: r }, h = b(S), d = N(h), p = m(d), E = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, g = X(h), f = m(g), u = I(f), L = a === 0 || f.r <= 1 && f.g <= 1 && f.b <= 1;
+    ), r = M(c, n), S = { l: c, c: a, h: r }, h = b(S), d = N(h), p = f(d), E = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, g = X(h), m = f(g), F = I(m), L = a === 0 || m.r <= 1 && m.g <= 1 && m.b <= 1;
     s.push({
       oklch: S,
       sRgb: E,
-      dispP3: u,
+      dispP3: F,
       gamut: _ ? "sRGB" : L ? "P3" : "Rec2020"
     });
   }
   return s;
 };
-let y = !1;
+let u = !1;
 const G = async () => {
-  y || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), y = !0);
+  u || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), u = !0);
 };
-figma.showUI(__html__, { width: 248, height: 800 });
+figma.showUI(__html__, { themeColors: !0, width: 248, height: 800 });
 const z = figma.root.documentColorProfile;
 figma.ui.postMessage({ message: "colorSpace", colorSpace: z });
 figma.ui.onmessage = async (t) => {
