@@ -19,7 +19,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
 
   &__root {
     display: grid;
-    grid-template-rows: 1fr min-content 1fr;
+    grid-template-rows: 1fr $shape-height 1fr;
     grid-template-columns: 1fr;
     place-items: stretch stretch;
     height: $height;
@@ -45,7 +45,6 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     position: relative;
     grid-row: 2 / span 1;
     grid-column: 1 / -1;
-    height: $shape-height;
     border-radius: $rad;
 
     @at-root #{$root-selector}[data-button-type='elevated'] {

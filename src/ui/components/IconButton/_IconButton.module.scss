@@ -12,8 +12,8 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
 
   &__root {
     display: grid;
-    grid-template-rows: 1fr min-content 1fr;
-    grid-template-columns: 1fr min-content 1fr;
+    grid-template-rows: 1fr $shape-size 1fr;
+    grid-template-columns: 1fr $shape-size 1fr;
     place-items: stretch stretch;
     width: $size;
     height: $size;
@@ -35,8 +35,6 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     position: relative;
     grid-row: 2 / span 1;
     grid-column: 2 / span 1;
-    width: $shape-size;
-    height: $shape-size;
     border-radius: $rad;
 
     &--part {
