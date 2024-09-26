@@ -1,11 +1,10 @@
-import { useCallback, useContext, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import {
   NumberField as AriaNumberField,
   Group as AriaGroup,
   Input as AriaInput,
 } from 'react-aria-components';
 import IconButton from '../IconButton/IconButton';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_NumberField.module.scss';
 import classNames from 'classnames/bind';
 
@@ -34,8 +33,6 @@ const NumberField = ({
   className = '',
   ...props
 }: NumberFieldProps) => {
-  const { theme } = useContext(ThemeContext);
-
   const innerValueRef = useRef(value);
   const isInnerValueMatchRef = useRef(true);
 
@@ -66,12 +63,7 @@ const NumberField = ({
 
   useLayoutEffect(() => {
     syncInnerValueToValue();
-    // console.log(isInnerValueMatchRef.current);
-  }, [syncInnerValueToValue]);
-  // useLayoutEffect(() => {
-  //   innerValueRef.current = value;
-  //   isInnerValueMatchRef.current = true;
-  // }, [value]);
+  }, [value]);
 
   const digitLength = useCallback(() => {
     const [minIntegerPart, minDecimalPart] = minValue.toString().split('.');
@@ -101,7 +93,6 @@ const NumberField = ({
       onKeyDown={onKeyDownHandler}
       onBlur={onBlurHandler}
       isWheelDisabled={isWheelDisabled}
-      data-theme={theme}
       {...(noButton && { 'data-no-button': noButton })}
       style={{ '--min-ch': digitLength() } as React.CSSProperties}
       {...props}

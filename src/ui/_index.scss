@@ -1,3 +1,5 @@
+@use './styles/typography' as t;
+
 /* Box sizing rules */
 *,
 *::before,
@@ -33,42 +35,70 @@ ol[role='list'] {
 /* Set core body defaults */
 body {
   margin: 0;
-  font-family: 'Martian Mono', monospace;
-  font-variation-settings: 'wdth' 100;
+  font-family: 'Inter Tight', sans-serif;
   font-style: normal;
   font-weight: 400;
   font-optical-sizing: auto;
-  line-height: 1.5;
+
+  // color: var(--figma-color-text);
+  // background-color: var(--figma-color-bg);
+  color: #fff;
+  background-color: #2c2c2c;
   transition: color 200ms cubic-bezier(0.2, 0, 0, 1),
     background-color 200ms cubic-bezier(0.2, 0, 0, 1);
 
-  &[data-theme='light'] {
-    color: var(--on-surface-light);
-    background-color: var(--surface-light);
-  }
-
-  &[data-theme='dark'] {
-    color: var(--on-surface-dark);
-    background-color: var(--surface-dark);
-  }
+  @include t.apply-scale('md');
 }
 
 /* Set shorter line heights on headings and interactive elements */
-h1,
-h2,
-h3,
-h4,
+h1 {
+  font-weight: 700;
+  @include t.apply-scale('h1');
+}
+
+h2 {
+  font-weight: 700;
+  @include t.apply-scale('h2');
+}
+
+h3 {
+  font-weight: 700;
+  @include t.apply-scale('h3');
+}
+
+h4 {
+  font-weight: 700;
+  @include t.apply-scale('h4');
+}
+
+h5 {
+  font-weight: 700;
+  @include t.apply-scale('h5');
+}
+
+h6 {
+  font-weight: 700;
+  @include t.apply-scale('h6');
+}
+
+input {
+  @include t.apply-role('number');
+}
+
+textarea,
+select,
 button,
-input,
 label {
-  line-height: 1.1;
+  @include t.apply-role('label');
 }
 
 /* Balance text wrapping on headings */
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
   text-wrap: balance;
 }
 
@@ -83,15 +113,6 @@ img,
 picture {
   display: block;
   max-width: 100%;
-}
-
-/* Inherit fonts for inputs and buttons */
-input,
-button,
-textarea,
-select {
-  font-family: inherit;
-  font-size: inherit;
 }
 
 /* Make sure textareas without a rows attribute are not tiny */

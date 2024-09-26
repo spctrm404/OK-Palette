@@ -1,6 +1,5 @@
-import { useCallback, useContext } from 'react';
+import { useCallback } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Button.module.scss';
 import classNames from 'classnames/bind';
 
@@ -22,8 +21,6 @@ const Button = ({
   className = '',
   ...props
 }: ButtonProps) => {
-  const { theme } = useContext(ThemeContext);
-
   const onPressHandler = useCallback(() => {
     onPress?.();
   }, [onPress]);
@@ -34,7 +31,6 @@ const Button = ({
       data-button-type={buttontype}
       {...(materialIcon && { 'data-has-icon': materialIcon })}
       onPress={onPressHandler}
-      data-theme={theme}
       {...props}
     >
       <div

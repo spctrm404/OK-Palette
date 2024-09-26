@@ -1,0 +1,104 @@
+@use 'sass:map';
+
+$scale: (
+  xs: (
+    font-size: 13px,
+    line-height: 20px,
+  ),
+  sm: (
+    font-size: 14px,
+    line-height: 20px,
+  ),
+  md: (
+    font-size: 16px,
+    line-height: 24px,
+  ),
+  lg: (
+    font-size: 18px,
+    line-height: 24px,
+  ),
+  xl: (
+    font-size: 20px,
+    line-height: 28px,
+  ),
+  h6: (
+    font-size: 18px,
+    line-height: 24px,
+  ),
+  h5: (
+    font-size: 20px,
+    line-height: 28px,
+  ),
+  h4: (
+    font-size: 26px,
+    line-height: 32px,
+  ),
+  h3: (
+    font-size: 32px,
+    line-height: 36px,
+  ),
+  h2: (
+    font-size: 41px,
+    line-height: 44px,
+  ),
+  h1: (
+    font-size: 52px,
+    line-height: 52px,
+  ),
+);
+
+@mixin apply-scale($key) {
+  @if map.has-key($scale, $key) {
+    $properties: map.get($scale, $key);
+
+    @each $property, $value in $properties {
+      #{$property}: $value;
+    }
+  }
+}
+
+$role: (
+  label: (
+    scale: 'sm',
+    font-family: (
+      'Inter Tight',
+      sans-serif,
+    ),
+    font-weight: 500,
+    line-height: 100%,
+  ),
+  button: (
+    scale: 'sm',
+    font-family: (
+      'Inter Tight',
+      sans-serif,
+    ),
+    font-weight: 700,
+    line-height: 100%,
+  ),
+  number: (
+    scale: 'sm',
+    font-family: (
+      'Martian Mono',
+      monospace,
+    ),
+    font-weight: 500,
+    line-height: 100%,
+    font-variation-settings: (
+      'wdth' 75,
+    ),
+  ),
+);
+
+@mixin apply-role($key) {
+  @if map.has-key($role, $key) {
+    $properties: map.get($role, $key);
+    @each $property, $value in $properties {
+      @if $property == 'scale' {
+        @include apply-scale($value);
+      } @else {
+        #{$property}: $value;
+      }
+    }
+  }
+}

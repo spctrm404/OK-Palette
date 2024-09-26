@@ -1,5 +1,6 @@
-$size: 3rem;
-$shape-size: 2.5rem;
+$multiplier: 0.75;
+$size: 3rem * $multiplier;
+$shape-size: 2.5rem * $multiplier;
 $border-thickness: 0.0625rem;
 $rad: 0.25rem;
 $icon-size: 1.5rem;
@@ -43,45 +44,25 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
         z-index: 1;
         transition: background-color $duration $easing;
         @at-root #{$root-selector}[data-button-type='tonal'] #{&} {
-          background-color: var(--secondary-container-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--secondary-container-dark);
-          }
+          background-color: var(--secondary-container);
 
           @at-root #{$root-selector}[data-disabled]#{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
         @at-root #{$root-selector}[data-button-type='filled'] #{&} {
-          background-color: var(--primary-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--primary-dark);
-          }
+          background-color: var(--primary);
 
           @at-root #{$root-selector}[data-disabled]#{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
       }
@@ -89,27 +70,17 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       &-fg {
         z-index: 4;
         @at-root #{$root-selector}[data-button-type='outlined'] #{&} {
-          border-color: var(--outline-light);
+          border-color: var(--outline);
           border-style: solid;
           border-width: $border-thickness;
           transition: border-color $duration $easing;
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            border-color: var(--outline-dark);
-          }
 
           @at-root #{$root-selector}[data-disabled]#{&} {
             border-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              border-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
       }
@@ -128,34 +99,19 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     transform: scale(0%, 0%);
 
     @at-root #{$root-selector}[data-button-type='standard'] #{&} {
-      background-color: var(--on-surface-variant-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-surface-variant-dark);
-      }
+      background-color: var(--on-surface-variant);
     }
     @at-root #{$root-selector}[data-button-type='outlined'] #{&} {
-      background-color: var(--on-surface-variant-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-surface-variant-dark);
-      }
+      background-color: var(--on-surface-variant);
     }
     @at-root #{$root-selector}[data-button-type='outlined-child'] #{&} {
-      background-color: var(--on-surface-variant-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-surface-variant-dark);
-      }
+      background-color: var(--on-surface-variant);
     }
     @at-root #{$root-selector}[data-button-type='tonal'] #{&} {
-      background-color: var(--on-secondary-container-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-secondary-container-dark);
-      }
+      background-color: var(--on-secondary-container);
     }
     @at-root #{$root-selector}[data-button-type='filled'] #{&} {
-      background-color: var(--on-primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-primary-dark);
-      }
+      background-color: var(--on-primary);
     }
 
     @at-root #{$root-selector}[data-hovered] #{&} {
@@ -193,48 +149,30 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     transition: color $duration $easing;
 
     @at-root #{$root-selector}[data-button-type='standard'] #{&} {
-      color: var(--on-surface-variant-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-surface-variant-dark);
-      }
+      color: var(--on-surface-variant);
     }
     @at-root #{$root-selector}[data-button-type='outlined'] #{&} {
-      color: var(--on-surface-variant-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-surface-variant-dark);
-      }
+      color: var(--on-surface-variant);
     }
     @at-root #{$root-selector}[data-button-type='outlined-child'] #{&} {
-      color: var(--on-surface-variant-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-surface-variant-dark);
-      }
+      color: var(--on-surface-variant);
     }
     @at-root #{$root-selector}[data-button-type='tonal'] #{&} {
-      color: var(--on-secondary-container-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-secondary-container-dark);
-      }
+      color: var(--on-secondary-container);
     }
     @at-root #{$root-selector}[data-button-type='filled'] #{&} {
-      color: var(--on-primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-primary-dark);
-      }
+      color: var(--on-primary);
     }
 
     @at-root #{$root-selector}[data-disabled] #{&} {
-      color: color-mix(in oklch, var(--on-surface-light) 38%, transparent);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: color-mix(in oklch, var(--on-surface-dark) 38%, transparent);
-      }
+      color: color-mix(in oklch, var(--on-surface) 38%, transparent);
     }
 
     &__icon {
       grid-row: 1 / span 1;
       grid-column: 1 / span 1;
       font-size: $icon-size;
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20;
       line-height: $icon-size;
     }
   }

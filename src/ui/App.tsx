@@ -15,6 +15,7 @@ import {
 import { PlaneCoord } from '../common/types';
 import { ThemeContext } from './contexts/ThemeContext';
 import Button from './components/Button/Button';
+import IconButton from './components/IconButton/IconButton';
 import NumberField from './components/NumberField/NumberField';
 import Radio from './components/Radio/Radio';
 import Slider from './components/Slider/Slider';
@@ -79,8 +80,8 @@ function App() {
   const { setHues } = useContext(ThemeContext);
 
   const radioItemsRef = useRef([
-    // { uid: 'radioItemsRef_1', value: '1', text: '1' },
-    // { uid: 'radioItemsRef_2', value: '2', text: '2' },
+    { uid: 'radioItemsRef_1', value: '1', text: '1' },
+    { uid: 'radioItemsRef_2', value: '2', text: '2' },
     { uid: 'radioItemsRef_5', value: '5', text: '5' },
     { uid: 'radioItemsRef_10', value: '10', text: '10' },
   ]);
@@ -229,6 +230,7 @@ function App() {
   return (
     <>
       <h2>{documentColorSpace}</h2>
+      <IconButton materialIcon="add" buttontype="filled" />
       <div className="lighnessAndChroma">
         <div>
           <XYSlider
@@ -308,7 +310,7 @@ function App() {
           maxValue={360}
           step={HUE_STEP}
           onChange={onChangeHueFromHandler}
-          noButton={true}
+          // noButton={true}
         />
         <NumberField
           // aria-labelledby={huesTitleId}

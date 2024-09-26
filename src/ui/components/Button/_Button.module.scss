@@ -1,14 +1,15 @@
-$height: 2.5rem;
-$content-px: 1.5rem;
-$content-px-has-icon: 1rem 1.5rem;
-$content-gx: 0.5rem;
-$content-px-text-button: 0.75rem;
-$content-px-text-button-has-icon: 0.75rem 1rem;
+@use '../../styles/typography' as t;
+
+$multiplier: 0.75;
+$height: 3rem * $multiplier;
+$shape-height: 2.5rem * $multiplier;
+$content-px: 1.5rem * $multiplier;
+$content-px-has-icon: 1rem * $multiplier 1.5rem * $multiplier;
+$content-gx: 0.5rem * $multiplier;
+$content-px-text-button: 0.75rem * $multiplier;
+$content-px-text-button-has-icon: 0.75rem * $multiplier 1rem * $multiplier;
 $border-thickness: 0.0625rem;
 $rad: 0.25rem;
-$font-size: 0.875rem;
-$font-weight: 500;
-$line-height: 1.25rem;
 $icon-size: 1.125rem;
 $duration: 200ms;
 $easing: cubic-bezier(0.2, 0, 0, 1);
@@ -23,213 +24,142 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     place-items: stretch stretch;
     height: $height;
     padding: 0;
-    overflow: hidden;
-    font-family: inherit;
-    font-size: $font-size;
-    font-style: normal;
-    font-weight: $font-weight;
-    line-height: $line-height;
     cursor: pointer;
     background-color: transparent;
     border: none;
-    border-radius: $rad;
+
+    @include t.apply-role('button');
 
     &:focus {
       outline: none;
     }
 
-    &[data-button-type='elevated'] {
-      box-shadow: var(--shadow-1-light);
-      transition: box-shadow $duration $easing;
-
-      &[data-theme='dark'] {
-        box-shadow: var(--shadow-1-dark);
-      }
-
-      &[data-hovered] {
-        box-shadow: var(--shadow-2-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-2-dark);
-        }
-      }
-
-      &[data-focused] {
-        box-shadow: var(--shadow-2-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-2-dark);
-        }
-      }
-
-      &[data-focus-visible] {
-        box-shadow: var(--shadow-2-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-2-dark);
-        }
-      }
-
-      &[data-pressed] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-disabled] {
-        cursor: auto;
-        box-shadow: var(--shadow-0);
-      }
-    }
-
-    &[data-button-type='tonal'] {
-      box-shadow: var(--shadow-0);
-      transition: box-shadow $duration $easing;
-
-      &[data-hovered] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-focused] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-focus-visible] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-pressed] {
-        box-shadow: var(--shadow-0);
-      }
-
-      &[data-disabled] {
-        box-shadow: var(--shadow-0);
-      }
-    }
-
-    &[data-button-type='filled'] {
-      box-shadow: var(--shadow-0);
-      transition: box-shadow $duration $easing;
-
-      &[data-hovered] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-focused] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-focus-visible] {
-        box-shadow: var(--shadow-1-light);
-
-        &[data-theme='dark'] {
-          box-shadow: var(--shadow-1-dark);
-        }
-      }
-
-      &[data-pressed] {
-        box-shadow: var(--shadow-0);
-      }
-
-      &[data-disabled] {
-        box-shadow: var(--shadow-0);
-      }
+    &[data-disabled] {
+      cursor: auto;
     }
   }
 
   &__shape {
+    $parent-selctor: &;
+
     position: relative;
-    grid-row: 1 / -1;
+    grid-row: 2 / span 1;
     grid-column: 1 / -1;
+    height: $shape-height;
     border-radius: $rad;
+
+    @at-root #{$root-selector}[data-button-type='elevated'] {
+      #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+        transition: box-shadow $duration $easing;
+      }
+
+      &[data-hovered] #{$parent-selctor} {
+        box-shadow: var(--shadow-2);
+      }
+
+      &[data-focused] #{$parent-selctor} {
+        box-shadow: var(--shadow-2);
+      }
+
+      &[data-focus-visible] #{$parent-selctor} {
+        box-shadow: var(--shadow-2);
+      }
+
+      &[data-pressed] #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-disabled] #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+      }
+    }
+    @at-root #{$root-selector}[data-button-type='tonal'] {
+      #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+        transition: box-shadow $duration $easing;
+      }
+
+      &[data-hovered] #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-focused] #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-focus-visible] {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-pressed] #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+      }
+
+      &[data-disabled] #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+      }
+    }
+    @at-root #{$root-selector}[data-button-type='filled'] {
+      #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+        transition: box-shadow $duration $easing;
+      }
+
+      &[data-hovered] #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-focused] #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-focus-visible] #{$parent-selctor} {
+        box-shadow: var(--shadow-1);
+      }
+
+      &[data-pressed] #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+      }
+
+      &[data-disabled] #{$parent-selctor} {
+        box-shadow: var(--shadow-0);
+      }
+    }
 
     &--part {
       &-bg {
         z-index: 1;
         transition: background-color $duration $easing;
-        @at-root #{$root-selector}[data-button-type='elevated'] #{&} {
-          background-color: var(--surface-container-low-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--surface-container-low-dark);
-          }
 
+        @at-root #{$root-selector}[data-button-type='elevated'] #{&} {
+          background-color: var(--surface-container-low);
           @at-root #{$root-selector}[data-disabled]#{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
         @at-root #{$root-selector}[data-button-type='tonal'] #{&} {
-          background-color: var(--secondary-container-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--secondary-container-dark);
-          }
-
+          background-color: var(--secondary-container);
           @at-root #{$root-selector}[data-disabled]#{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
         @at-root #{$root-selector}[data-button-type='filled'] #{&} {
-          background-color: var(--primary-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--primary-dark);
-          }
-
+          background-color: var(--primary);
           @at-root #{$root-selector}[data-disabled]#{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
       }
@@ -237,32 +167,17 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       &-fg {
         z-index: 4;
         transition: border-color $duration $easing;
+
         @at-root #{$root-selector}[data-button-type='outlined'] #{&} {
-          border-color: var(--outline-light);
+          border-color: var(--outline);
           border-style: solid;
           border-width: $border-thickness;
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            border-color: var(--outline-dark);
-          }
-
           @at-root #{$root-selector}[data-pressed]#{&} {
-            border-color: var(--primary-light);
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              border-color: var(--primary-dark);
-            }
-          }
-
-          @at-root #{$root-selector}[data-disabled]#{&} {
-            border-color: color-mix(
-              in oklch,
-              var(--on-surface-light) 12%,
-              transparent
-            );
-
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
+            border-color: var(--primary);
+            @at-root #{$root-selector}[data-disabled]#{&} {
               border-color: color-mix(
                 in oklch,
-                var(--on-surface-dark) 12%,
+                var(--on-surface) 12%,
                 transparent
               );
             }
@@ -275,7 +190,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
   &__state {
     position: relative;
     z-index: 2;
-    grid-row: 1 / -1;
+    grid-row: 2 / span 1;
     grid-column: 1 / -1;
     opacity: 0;
     transition: background-color $duration $easing, opacity $duration $easing,
@@ -283,34 +198,19 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     transform: scale(0%, 100%);
 
     @at-root #{$root-selector}[data-button-type='text'] #{&} {
-      background-color: var(--primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--primary-dark);
-      }
+      background-color: var(--primary);
     }
     @at-root #{$root-selector}[data-button-type='outlined'] #{&} {
-      background-color: var(--primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--primary-dark);
-      }
+      background-color: var(--primary);
     }
     @at-root #{$root-selector}[data-button-type='elevated'] #{&} {
-      background-color: var(--primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--primary-dark);
-      }
+      background-color: var(--primary);
     }
     @at-root #{$root-selector}[data-button-type='tonal'] #{&} {
-      background-color: var(--on-secondary-container-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-secondary-container-dark);
-      }
+      background-color: var(--on-secondary-container);
     }
     @at-root #{$root-selector}[data-button-type='filled'] #{&} {
-      background-color: var(--on-primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        background-color: var(--on-primary-dark);
-      }
+      background-color: var(--on-primary);
     }
 
     @at-root #{$root-selector}[data-hovered] #{&} {
@@ -349,64 +249,45 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     padding-inline: $content-px;
     user-select: none;
     transition: color $duration $easing;
-    @at-root #{$root-selector}[data-has-icon] #{&} {
-      grid-template-columns: min-content max-content;
-      padding-inline: $content-px-has-icon;
-    }
+
     @at-root #{$root-selector}[data-button-type='text'] #{&} {
       padding-inline: $content-px-text-button;
+      color: var(--primary);
     }
     @at-root #{$root-selector}[data-button-type='text'][data-has-icon] #{&} {
       padding-inline: $content-px-text-button-has-icon;
     }
-
-    @at-root #{$root-selector}[data-button-type='text'] #{&} {
-      color: var(--primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--primary-dark);
-      }
-    }
     @at-root #{$root-selector}[data-button-type='outlined'] #{&} {
-      color: var(--primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--primary-dark);
-      }
+      color: var(--primary);
     }
     @at-root #{$root-selector}[data-button-type='elevated'] #{&} {
-      color: var(--primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--primary-dark);
-      }
+      color: var(--primary);
     }
     @at-root #{$root-selector}[data-button-type='tonal'] #{&} {
-      color: var(--on-secondary-container-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-secondary-container-dark);
-      }
+      color: var(--on-secondary-container);
     }
     @at-root #{$root-selector}[data-button-type='filled'] #{&} {
-      color: var(--on-primary-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-primary-dark);
-      }
+      color: var(--on-primary);
     }
 
+    @at-root #{$root-selector}[data-has-icon] #{&} {
+      grid-template-columns: min-content max-content;
+      padding-inline: $content-px-has-icon;
+    }
     @at-root #{$root-selector}[data-disabled] #{&} {
-      color: color-mix(in oklch, var(--on-surface-light) 38%, transparent);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: color-mix(in oklch, var(--on-surface-dark) 38%, transparent);
-      }
+      color: color-mix(in oklch, var(--on-surface) 38%, transparent);
     }
 
     &__icon {
       grid-row: 1 / -1;
       font-size: $icon-size;
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 20;
       line-height: $icon-size;
     }
 
     &__text {
       grid-row: 1 / -1;
+      text-align: center;
       white-space: nowrap;
     }
   }

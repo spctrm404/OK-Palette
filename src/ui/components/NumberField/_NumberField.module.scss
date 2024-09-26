@@ -1,8 +1,9 @@
-$button-size: 3rem;
-$button-visible-size: 2.5rem;
-$font-size: 1rem;
-$line-height: 1.5rem;
-$input-px: 1rem;
+@use '../../styles/typography' as t;
+
+$multiplier: 0.75;
+$height: 3rem * $multiplier;
+$shape-height: 2.5rem * $multiplier;
+$input-px: 1rem * $multiplier;
 $rad: 0.25rem;
 $duration: 200ms;
 $easing: cubic-bezier(0.2, 0, 0, 1);
@@ -12,27 +13,19 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
 
   &__root {
     display: grid;
-    grid-template-rows: $button-size;
-    grid-template-columns:
-      $button-size minmax(calc(var(--min-ch) * 1ch + 2 * $input-px), 1fr)
-      $button-size;
+    grid-template-rows: 1fr min-content 1fr;
+    grid-template-columns: min-content 1fr min-content;
     place-items: stretch stretch;
-    min-width: calc(var(--min-ch) * 1ch + 2 * $input-px + 2 * $button-size);
-    max-width: calc(
-      (var(--min-ch) + 2) * 1ch + 2 * $input-px + 2 * $button-size
-    );
-    font-size: $font-size;
-    font-style: normal;
-    font-weight: 400;
-    line-height: $line-height;
+    width: fit-content;
+    height: $height;
+
+    @include t.apply-role('number');
 
     &[data-no-button] {
       grid-template-columns: minmax(
         calc(var(--min-ch) * 1ch + 2 * $input-px),
         1fr
       );
-      min-width: calc(var(--min-ch) * 1ch + 2 * $input-px);
-      max-width: calc((var(--min-ch) + 2) * 1ch + 2 * $input-px);
     }
   }
 
@@ -42,6 +35,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     grid-template-columns: subgrid;
     grid-row: 1 / -1;
     grid-column: 1 / -1;
+    place-items: center stretch;
   }
 
   &__input {
@@ -49,31 +43,26 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
 
     position: relative;
     z-index: 3;
-    grid-row: 1 / span 1;
+    grid-row: 2 / span 1;
     grid-column: 2 / span 1;
+    max-width: calc((var(--min-ch) + 1) * 1ch + 2 * $input-px);
     padding-block: 0;
     padding-inline: $input-px;
-    margin-block: 0.5 * ($button-size - $button-visible-size);
-    font: inherit;
-    color: var(--on-secondary-container-light);
+    color: var(--on-secondary-container);
     text-align: right;
     background-color: transparent;
     border: 0;
     border-radius: $rad;
     transition: color $duration $easing;
-    @at-root #{$root-selector}[data-theme='dark'] #{&} {
-      color: var(--on-secondary-container-dark);
-    }
+
+    @include t.apply-role('number');
 
     &:focus {
       outline: none;
     }
 
     &[data-disabled] {
-      color: color-mix(in oklch, var(--on-surface-light) 38%, transparent);
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        color: color-mix(in oklch, var(--on-surface-dark) 38%, transparent);
-      }
+      color: color-mix(in oklch, var(--on-surface) 38%, transparent);
     }
 
     @at-root #{$root-selector}[data-no-button] #{&} {
@@ -83,29 +72,19 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     &__shape {
       position: relative;
       z-index: 1;
-      grid-row: 1 / span 1;
+      grid-row: 2 / span 1;
       grid-column: 2 / span 1;
-      margin-block: 0.5 * ($button-size - $button-visible-size);
-      background-color: var(--secondary-container-light);
+      height: $shape-height;
+      background-color: var(--secondary-container);
       border-radius: $rad;
       transition: background-color $duration $easing;
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--secondary-container-dark);
-      }
 
       @at-root #{$parent-selector}[data-disabled] ~ #{&} {
         background-color: color-mix(
           in oklch,
-          var(--on-surface-light) 12%,
+          var(--on-surface) 12%,
           transparent
         );
-        @at-root #{$root-selector}[data-theme='dark'] #{&} {
-          background-color: color-mix(
-            in oklch,
-            var(--on-surface-dark) 12%,
-            transparent
-          );
-        }
       }
 
       @at-root #{$root-selector}[data-no-button] #{&} {
@@ -116,18 +95,14 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     &__state {
       position: relative;
       z-index: 2;
-      grid-row: 1 / span 1;
+      grid-row: 2 / span 1;
       grid-column: 2 / span 1;
-      margin-block: 0.5 * ($button-size - $button-visible-size);
-      background-color: var(--on-secondary-container-light);
+      background-color: var(--on-secondary-container);
       border-radius: $rad;
       opacity: 0;
       transition: background-color $duration $easing, opacity $duration $easing,
         transform $duration $easing;
       transform: scale(0%, 100%);
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--on-secondary-container-dark);
-      }
 
       @at-root .number-field__input[data-hovered] ~ #{&} {
         opacity: 0.08;
@@ -153,7 +128,8 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
   }
 
   &__button {
-    grid-row: 1 / span 1;
+    grid-row: 2 / span 1;
+    place-self: center center;
 
     &--part {
       &-decrease {
