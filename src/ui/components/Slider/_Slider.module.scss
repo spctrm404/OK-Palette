@@ -1,15 +1,16 @@
+$multiplier: 0.5;
 $min-width: 6.25rem;
-$track-height: 1rem;
-$thumb-size: 3rem;
-$thumb-shape-height: 1.5rem;
-$thumb-shape-height-pressed: 1.75rem;
+$track-height: 1rem * $multiplier;
+$thumb-size: 3rem * $multiplier;
+$thumb-shape-height: 1.5rem * $multiplier;
+$thumb-shape-height-pressed: 1.75rem * $multiplier;
 $track-indicator-gap: 1rem;
 $track-rad-l: 0.25rem;
 $track-rad-s: 0.125rem;
 $thumb-shape-width: 0.25rem;
 $thumb-shape-width-pressed: 0.125rem;
 $thumb-shape-rad: 0.125rem;
-$state-width: 2.5rem;
+$state-width: 2.5rem * $multiplier;
 $state-height: $state-width;
 $state-rad: 0.25rem;
 $duration: 200ms;
@@ -56,7 +57,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       &--part {
         &-active {
           z-index: 1;
-          background-color: var(--primary-light);
+          background-color: var(--primary);
           @at-root #{$root-selector}[data-orientation='horizontal'] #{&} {
             inset: 0
               calc(
@@ -72,29 +73,19 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
               0 0;
             border-radius: $track-rad-s $track-rad-s $track-rad-l $track-rad-l;
           }
-          @at-root #{$root-selector}[data-theme='dark'] #{&} {
-            background-color: var(--primary-dark);
-          }
 
           @at-root #{$root-selector}[data-disabled] #{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 38%,
+              var(--on-surface) 38%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 38%,
-                transparent
-              );
-            }
           }
         }
 
         &-inactive {
           z-index: 1;
-          background-color: var(--secondary-container-light);
+          background-color: var(--secondary-container);
           @at-root #{$root-selector}[data-orientation='horizontal'] #{&} {
             inset: 0 0 0
               calc(100% * var(--normalized-val) + 0.5 * $track-indicator-gap);
@@ -105,23 +96,13 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
               calc(100% * var(--normalized-val) + 0.5 * $track-indicator-gap);
             border-radius: $track-rad-l $track-rad-l $track-rad-s $track-rad-s;
           }
-          @at-root #{$root-selector}[data-theme='dark'] #{&} {
-            background-color: var(--secondary-container-dark);
-          }
 
           @at-root #{$root-selector}[data-disabled] #{&} {
             background-color: color-mix(
               in oklch,
-              var(--on-surface-light) 12%,
+              var(--on-surface) 12%,
               transparent
             );
-            @at-root #{$root-selector}[data-theme='dark']#{&} {
-              background-color: color-mix(
-                in oklch,
-                var(--on-surface-dark) 12%,
-                transparent
-              );
-            }
           }
         }
       }
@@ -153,7 +134,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       top: 50%;
       left: 50%;
       z-index: 1;
-      background-color: var(--primary-light);
+      background-color: var(--primary);
       border-radius: $state-rad;
       opacity: 0;
       transition: background-color $duration $easing, opacity $duration $easing,
@@ -166,9 +147,6 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       @at-root #{$root-selector}[data-orientation='vertical'] #{&} {
         width: $state-height;
         height: $state-width;
-      }
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--primary-dark);
       }
 
       @at-root #{$parent-selector}[data-hovered] #{&} {
@@ -198,7 +176,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       top: 50%;
       left: 50%;
       z-index: 2;
-      background-color: var(--primary-light);
+      background-color: var(--primary);
       border-radius: $thumb-shape-rad;
       transition: width $duration $easing, height $duration $easing,
         background-color $duration $easing;
@@ -210,9 +188,6 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       @at-root #{$root-selector}[data-orientation='vertical'] #{&} {
         width: $thumb-shape-height;
         height: $thumb-shape-width;
-      }
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--primary-dark);
       }
 
       @at-root #{$parent-selector}[data-dragging] #{&} {
@@ -228,16 +203,9 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       @at-root #{$root-selector}[data-disabled] #{&} {
         background-color: color-mix(
           in oklch,
-          var(--on-surface-light) 38%,
+          var(--on-surface) 38%,
           transparent
         );
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: color-mix(
-            in oklch,
-            var(--on-surface-dark) 38%,
-            transparent
-          );
-        }
       }
     }
   }

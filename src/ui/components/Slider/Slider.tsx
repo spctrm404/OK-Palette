@@ -1,10 +1,9 @@
-import { useCallback, useContext } from 'react';
+import { useCallback } from 'react';
 import {
   Slider as AriaSlider,
   SliderThumb as AriaSliderThumb,
   SliderTrack as AriaSliderTrack,
 } from 'react-aria-components';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Slider.module.scss';
 import classNames from 'classnames/bind';
 
@@ -31,8 +30,6 @@ const Slider = ({
   className = '',
   ...props
 }: SliderProps) => {
-  const { theme } = useContext(ThemeContext);
-
   const onChangeEndHandler = useCallback(
     (newNumber: number) => {
       onChangeEnd?.(newNumber);
@@ -60,7 +57,6 @@ const Slider = ({
       value={value}
       onChangeEnd={onChangeEndHandler}
       onChange={onChangeHandler}
-      data-theme={theme}
       style={{ '--normalized-val': normalizedValue() } as React.CSSProperties}
       {...props}
     >

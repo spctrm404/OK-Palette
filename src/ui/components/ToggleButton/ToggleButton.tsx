@@ -1,6 +1,5 @@
-import { useCallback, useContext } from 'react';
+import { useCallback } from 'react';
 import { ToggleButton as AriaToggleButton } from 'react-aria-components';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_ToggleButton.module.scss';
 import classNames from 'classnames/bind';
 
@@ -24,8 +23,6 @@ const ToggleButton = ({
   className = '',
   ...props
 }: ToggleButtonProps) => {
-  const { theme } = useContext(ThemeContext);
-
   const onChangeHandler = useCallback(
     (newBoolean: boolean) => {
       onChange?.(newBoolean);
@@ -39,7 +36,6 @@ const ToggleButton = ({
       data-button-type={buttontype}
       isSelected={isSelected}
       onChange={onChangeHandler}
-      data-theme={theme}
       {...props}
     >
       <div

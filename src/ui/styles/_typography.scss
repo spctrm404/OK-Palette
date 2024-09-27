@@ -78,14 +78,19 @@ $role: (
   ),
   number: (
     scale: 'sm',
-    font-family: (
-      'Martian Mono',
-      monospace,
-    ),
+    // font-family: (
+    //   'Martian Mono',
+    //   monospace,
+    // ),
+    font-family:
+      (
+        'Inconsolata',
+        monospace,
+      ),
     font-weight: 500,
     line-height: 100%,
     font-variation-settings: (
-      'wdth' 75,
+      'wdth' 100,
     ),
   ),
 );

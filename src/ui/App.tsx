@@ -5,6 +5,7 @@ import {
   useState,
   useReducer,
   useRef,
+  useLayoutEffect,
 } from 'react';
 import {
   LIGHTNESS_STEP,
@@ -20,6 +21,7 @@ import NumberField from './components/NumberField/NumberField';
 import Radio from './components/Radio/Radio';
 import Slider from './components/Slider/Slider';
 import Switch from './components/Switch/Switch';
+import ToggleButton from './components/ToggleButton/ToggleButton';
 import XYSlider from './components/XYSlider/XYSlider';
 import st from './_App.module.scss';
 import classNames from 'classnames/bind';
@@ -205,6 +207,19 @@ function App() {
     });
   }, []);
 
+  useLayoutEffect(() => {
+    if (!state.isHueRanged) {
+      dispatch({
+        type: 'setNumber',
+        payload: { field: 'hueTo', value: state.hueFrom },
+      });
+    }
+  }, [state.isHueRanged, state.hueFrom]);
+
+  useLayoutEffect(() => {
+    setHues?.({ from: state.hueFrom, to: state.hueTo });
+  }, [state.hueFrom, state.hueTo]);
+
   useEffect(() => {
     window.onmessage = (event) => {
       const { message, colorSpace } = event.data.pluginMessage;
@@ -214,23 +229,19 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!state.isHueRanged) {
-      dispatch({
-        type: 'setNumber',
-        payload: { field: 'hueTo', value: state.hueFrom },
-      });
-    }
-  }, [state.isHueRanged, state.hueFrom]);
-
-  useEffect(() => {
-    setHues?.({ from: state.hueFrom, to: state.hueTo });
-  }, [state.hueFrom, state.hueTo]);
+  const [testBoolean, setTestBoolean] = useState(false);
 
   return (
     <>
       <h2>{documentColorSpace}</h2>
       <IconButton materialIcon="add" buttontype="filled" />
+      <ToggleButton
+        materialIcon="add"
+        materialIconAlt="remove"
+        buttontype="tonal"
+        isSelected={testBoolean}
+        onChange={setTestBoolean}
+      />
       <div className="lighnessAndChroma">
         <div>
           <XYSlider
@@ -310,7 +321,7 @@ function App() {
           maxValue={360}
           step={HUE_STEP}
           onChange={onChangeHueFromHandler}
-          // noButton={true}
+          noButton={true}
         />
         <NumberField
           // aria-labelledby={huesTitleId}

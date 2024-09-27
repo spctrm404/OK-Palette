@@ -1,11 +1,12 @@
-$width: 3.25rem;
-$height: 2rem;
+$multiplier: 0.75;
+$width: 3.25rem * $multiplier;
+$height: 2rem * $multiplier;
 $border-thickness: 0.125rem;
-$thumb-size: 3rem;
-$thumb-shape-size: 1rem;
-$thumb-shape-size-pressed: 1.75rem;
-$thumb-shape-size-true: 1.5rem;
-$thumb-state-size: 2.5rem;
+$thumb-size: 3rem * $multiplier;
+$thumb-shape-size: 1rem * $multiplier;
+$thumb-shape-size-pressed: 1.75rem * $multiplier;
+$thumb-shape-size-true: 1.5rem * $multiplier;
+$thumb-state-size: 2.5rem * $multiplier;
 $thumb-rad: 0.125rem;
 $state-rad: 0.25rem;
 $track-rad: 0.25rem;
@@ -35,39 +36,27 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     height: 100%;
 
     &__shape {
-      background-color: var(--surface-container-highest-light);
-      border-color: var(--outline-light);
+      background-color: var(--surface-container-highest);
+      border-color: var(--outline);
       border-style: solid;
       border-width: $border-thickness;
       border-radius: $track-rad;
       transition: border-width $duration $easing,
         background-color $duration $easing;
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--surface-container-highest-dark);
-        border-color: var(--outline-dark);
-      }
 
       @at-root #{$root-selector}[data-selected] #{&} {
-        background-color: var(--primary-light);
+        background-color: var(--primary);
         border-width: 0;
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--primary-dark);
-          border-color: var(--primary-dark);
+        @at-root .figma-dark #{&} {
+          border-color: var(--primary);
         }
       }
       @at-root #{$root-selector}[data-disabled] #{&} {
         background-color: color-mix(
           in oklch,
-          var(--on-surface-light) 38%,
+          var(--on-surface) 38%,
           transparent
         );
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          border-color: color-mix(
-            in oklch,
-            var(--on-surface-dark) 38%,
-            transparent
-          );
-        }
       }
     }
   }
@@ -91,20 +80,14 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       left: 50%;
       width: $thumb-state-size;
       height: $thumb-state-size;
-      background-color: var(--on-surface-variant-light);
+      background-color: var(--on-surface-variant);
       border-radius: $state-rad;
       opacity: 0;
       transition: opacity $duration $easing, transform $duration $easing;
       transform: translate(-50%, -50%) scale(0%, 0%);
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--on-surface-variant-dark);
-      }
 
       @at-root #{$root-selector}[data-selected] #{&} {
-        background-color: var(--primary-light);
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--primary-dark);
-        }
+        background-color: var(--primary);
       }
       @at-root #{$root-selector}[data-hovered] #{&} {
         opacity: 0.08;
@@ -138,14 +121,11 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       place-items: center center;
       width: $thumb-shape-size;
       height: $thumb-shape-size;
-      background-color: var(--outline-light);
+      background-color: var(--outline);
       border-radius: $thumb-rad;
       transition: width $duration $easing, height $duration $easing,
         background-color $duration $easing;
       transform: translate(-50%, -50%);
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--outline-dark);
-      }
 
       &:has(#{$root-selector}__icon) {
         width: $thumb-shape-size-true;
@@ -155,82 +135,45 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       @at-root #{$root-selector}[data-selected] #{&} {
         width: $thumb-shape-size-true;
         height: $thumb-shape-size-true;
-        background-color: var(--on-primary-light);
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--on-primary-dark);
-        }
+        background-color: var(--on-primary);
 
         @at-root #{$root-selector}[data-hovered]#{&} {
-          background-color: var(--primary-container-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--primary-container-dark);
-          }
+          background-color: var(--primary-container);
         }
         @at-root #{$root-selector}[data-focused]#{&} {
-          background-color: var(--primary-container-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--primary-container-dark);
-          }
+          background-color: var(--primary-container);
         }
         @at-root #{$root-selector}[data-focus-visible]#{&} {
-          background-color: var(--primary-container-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--primary-container-dark);
-          }
+          background-color: var(--primary-container);
         }
 
         @at-root #{$root-selector}[data-pressed]#{&} {
-          background-color: var(--primary-container-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--primary-container-dark);
-          }
+          background-color: var(--primary-container);
         }
       }
       @at-root #{$root-selector}[data-hovered] #{&} {
-        background-color: var(--on-surface-variant-light);
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--on-surface-variant-dark);
-        }
+        background-color: var(--on-surface-variant);
       }
       @at-root #{$root-selector}[data-focused] #{&} {
-        background-color: var(--on-surface-variant-light);
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--on-surface-variant-dark);
-        }
+        background-color: var(--on-surface-variant);
       }
       @at-root #{$root-selector}[data-focus-visible] #{&} {
-        background-color: var(--on-surface-variant-light);
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--on-surface-variant-dark);
-        }
+        background-color: var(--on-surface-variant);
       }
       @at-root #{$root-selector}[data-pressed] #{&} {
         width: $thumb-shape-size-pressed;
         height: $thumb-shape-size-pressed;
-        background-color: var(--on-surface-variant-light);
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: var(--on-surface-variant-dark);
-        }
+        background-color: var(--on-surface-variant);
       }
       @at-root #{$root-selector}[data-disabled] #{&} {
         background-color: color-mix(
           in oklch,
-          var(--on-surface-light) 38%,
+          var(--on-surface) 38%,
           transparent
         );
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: color-mix(
-            in oklch,
-            var(--on-surface-dark) 38%,
-            transparent
-          );
-        }
 
         @at-root #{$root-selector}[data-selected]#{&} {
-          background-color: var(--surface-light);
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: var(--surface-dark);
-          }
+          background-color: var(--surface);
         }
       }
     }
@@ -240,20 +183,14 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
     grid-row: 1 / span 1;
     grid-column: 1 / span 1;
     font-size: $icon-size;
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 20;
     line-height: $icon-size;
-    color: var(--surface-container-highest-light);
+    color: var(--surface-container-highest);
     user-select: none;
     transition: color $duration $easing, opacity $duration $easing;
-    @at-root #{$root-selector}[data-theme='dark'] #{&} {
-      color: var(--surface-container-highest-dark);
-    }
 
     @at-root #{$root-selector}[data-selected] #{&} {
-      color: var(--on-primary-container-light);
-      @at-root #{$root-selector}[data-theme='dark']#{&} {
-        color: var(--on-primary-container-dark);
-      }
+      color: var(--on-primary-container);
     }
 
     &--part {

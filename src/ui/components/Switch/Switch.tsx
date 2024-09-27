@@ -1,6 +1,5 @@
-import { useCallback, useContext, useId } from 'react';
+import { useCallback } from 'react';
 import { Switch as AriaSwitch } from 'react-aria-components';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Switch.module.scss';
 import classNames from 'classnames/bind';
 
@@ -22,10 +21,6 @@ const Switch = ({
   className = '',
   ...props
 }: SwitchProps) => {
-  const { theme } = useContext(ThemeContext);
-
-  const id = useId();
-
   const onChangeHandler = useCallback(
     (newBoolean: boolean) => {
       onChange?.(newBoolean);
@@ -38,8 +33,6 @@ const Switch = ({
       className={cx('switch', 'switch__root', className)}
       isSelected={isSelected}
       onChange={onChangeHandler}
-      data-theme={theme}
-      id={id}
       {...props}
     >
       <div className={cx('switch__track', 'switch-track')}>

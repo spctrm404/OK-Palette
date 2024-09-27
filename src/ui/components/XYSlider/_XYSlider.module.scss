@@ -1,10 +1,11 @@
+$multiplier: 0.75;
 $min-size: 6.25rem;
-$thumb-size: 3rem;
+$thumb-size: 3rem * $multiplier;
 $track-rad: 0.25rem;
 $state-rad: 0.25rem;
-$state-size: 2.5rem;
-$thumb-shape-size: 1.5rem;
-$thumb-shape-size-pressed: 1.75rem;
+$state-size: 2.5rem * $multiplier;
+$thumb-shape-size: 1.5rem * $multiplier;
+$thumb-shape-size-pressed: 1.75rem * $multiplier;
 $thumb-shape-indicator-gap: 0.25rem;
 $thumb-shape-indicator-gap-pressed: 0.5rem;
 $thumb-shape-indicator-width: 0.25rem;
@@ -76,32 +77,21 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       position: absolute;
       inset: 0;
       z-index: 1;
-      background-color: var(--secondary-container-light);
+      background-color: var(--secondary-container);
       border-radius: $track-rad;
       transition: background-color $duration $easing;
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--secondary-container-dark);
-      }
 
       @at-root #{$root-selector}[data-disabled] #{&} {
         background-color: color-mix(
           in oklch,
-          var(--on-surface-light) 12%,
+          var(--on-surface) 12%,
           transparent
         );
-        @at-root #{$root-selector}[data-theme='dark']#{&} {
-          background-color: color-mix(
-            in oklch,
-            var(--on-surface-dark) 12%,
-            transparent
-          );
-        }
       }
     }
 
     &__guide {
-      $line-light: color-mix(in oklch, var(--primary-light) 16%, transparent);
-      $line-dark: color-mix(in oklch, var(--primary-dark) 16%, transparent);
+      $line: color-mix(in oklch, var(--primary) 16%, transparent);
 
       position: absolute;
       z-index: 2;
@@ -142,10 +132,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
           );
           border-radius: 0 0 $guide-rad $guide-rad;
           transform-origin: bottom center;
-          @include dashed-line($guide-dash, $guide-gap, top, $line-light);
-          @at-root #{$root-selector}[data-theme='dark'] #{&} {
-            @include dashed-line($guide-dash, $guide-gap, top, $line-dark);
-          }
+          @include dashed-line($guide-dash, $guide-gap, top, $line);
         }
 
         &-bottom {
@@ -159,10 +146,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
           );
           border-radius: $guide-rad $guide-rad 0 0;
           transform-origin: top center;
-          @include dashed-line($guide-dash, $guide-gap, bottom, $line-light);
-          @at-root #{$root-selector}[data-theme='dark'] #{&} {
-            @include dashed-line($guide-dash, $guide-gap, bottom, $line-dark);
-          }
+          @include dashed-line($guide-dash, $guide-gap, bottom, $line);
         }
 
         &-left {
@@ -176,10 +160,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
           left: 0;
           border-radius: 0 $guide-rad $guide-rad 0;
           transform-origin: center right;
-          @include dashed-line($guide-dash, $guide-gap, left, $line-light);
-          @at-root #{$root-selector}[data-theme='dark'] #{&} {
-            @include dashed-line($guide-dash, $guide-gap, left, $line-dark);
-          }
+          @include dashed-line($guide-dash, $guide-gap, left, $line);
         }
 
         &-right {
@@ -193,10 +174,7 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
           );
           border-radius: $guide-rad 0 0 $guide-rad;
           transform-origin: center left;
-          @include dashed-line($guide-dash, $guide-gap, right, $line-light);
-          @at-root #{$root-selector}[data-theme='dark'] #{&} {
-            @include dashed-line($guide-dash, $guide-gap, right, $line-dark);
-          }
+          @include dashed-line($guide-dash, $guide-gap, right, $line);
         }
       }
     }
@@ -227,16 +205,12 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
       z-index: 1;
       width: $state-size;
       height: $state-size;
-      background-color: var(--primary-light);
+      background-color: var(--primary);
       border-radius: $state-rad;
       opacity: 0;
       transition: background-color $duration $easing, opacity $duration $easing,
         transform $duration $easing;
       transform: translate(-50%, -50%) scale(0%, 0%);
-
-      @at-root #{$root-selector}[data-theme='dark'] #{&} {
-        background-color: var(--primary-dark);
-      }
 
       @at-root #{$parent-selector}[data-hovered] #{&} {
         opacity: 0.08;
@@ -278,26 +252,16 @@ $easing: cubic-bezier(0.2, 0, 0, 1);
 
       &__component {
         position: absolute;
-        background-color: var(--primary-light);
+        background-color: var(--primary);
         border-radius: $thumb-shape-indicator-rad;
         transition: inset $duration $easing, background-color $duration $easing;
-        @at-root #{$root-selector}[data-theme='dark'] #{&} {
-          background-color: var(--primary-dark);
-        }
 
         @at-root #{$root-selector}[data-disabled] #{&} {
           background-color: color-mix(
             in oklch,
-            var(--on-surface-light) 38%,
+            var(--on-surface) 38%,
             transparent
           );
-          @at-root #{$root-selector}[data-theme='dark']#{&} {
-            background-color: color-mix(
-              in oklch,
-              var(--on-surface-dark) 38%,
-              transparent
-            );
-          }
         }
 
         &--part {
