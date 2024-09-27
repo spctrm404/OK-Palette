@@ -58,10 +58,36 @@ $scale: (
 }
 
 $role: (
+  plain: (
+    scale: 'sm',
+    font-family: (
+      'Roboto ',
+      sans-serif,
+    ),
+    font-weight: 400,
+  ),
+  section-label: (
+    scale: 'md',
+    font-family: (
+      'Roboto Condensed',
+      sans-serif,
+    ),
+    font-weight: 500,
+    line-height: 100%,
+  ),
   label: (
     scale: 'sm',
     font-family: (
-      'Inter Tight',
+      'Roboto Condensed',
+      sans-serif,
+    ),
+    font-weight: 500,
+    line-height: 100%,
+  ),
+  value: (
+    scale: 'sm',
+    font-family: (
+      'Roboto',
       sans-serif,
     ),
     font-weight: 500,
@@ -70,7 +96,7 @@ $role: (
   button: (
     scale: 'sm',
     font-family: (
-      'Inter Tight',
+      'Roboto',
       sans-serif,
     ),
     font-weight: 700,
@@ -84,14 +110,11 @@ $role: (
     // ),
     font-family:
       (
-        'Inconsolata',
+        'Roboto Mono',
         monospace,
       ),
     font-weight: 500,
     line-height: 100%,
-    font-variation-settings: (
-      'wdth' 100,
-    ),
   ),
 );
 

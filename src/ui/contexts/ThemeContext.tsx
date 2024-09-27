@@ -1,3 +1,5 @@
+// todo: observe html class
+
 import {
   createContext,
   useCallback,
@@ -376,11 +378,24 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     [theme, hues]
   );
 
+  // useLayoutEffect(() => {
+  //   const initTheme = window.matchMedia('(prefers-color-scheme: light)').matches
+  //     ? 'light'
+  //     : 'dark';
+  //   setTheme(initTheme);
+  // }, []);
   useLayoutEffect(() => {
-    const initTheme = window.matchMedia('(prefers-color-scheme: light)').matches
-      ? 'light'
-      : 'dark';
-    setTheme(initTheme);
+    const htmlElement = document.documentElement;
+    const isLight = htmlElement.classList.contains('figma-light');
+    if (isLight) {
+      setTheme('light');
+      return;
+    }
+    const isDark = htmlElement.classList.contains('figma-dark');
+    if (isDark) {
+      setTheme('dark');
+      return;
+    }
   }, []);
   useLayoutEffect(() => {
     const body = document.body;

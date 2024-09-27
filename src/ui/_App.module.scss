@@ -1,0 +1,108 @@
+@use './styles/typography' as t;
+
+$section-px: 1.125rem;
+
+body {
+  padding-block: 1.125rem;
+}
+
+.label {
+  color: var(--outline);
+  @include t.apply-role('label');
+
+  & + * {
+    margin-top: 0.25rem;
+  }
+}
+
+.section-label {
+  color: var(--on-surface-variant);
+  @include t.apply-role('section-label');
+
+  @at-root .section #{&} {
+    padding-inline: $section-px;
+  }
+}
+
+.value {
+  color: var(--primary);
+  @include t.apply-role('value');
+}
+
+.divider {
+  height: 0.0625rem;
+  margin-block: 1.125rem;
+  background-color: var(--outline);
+}
+
+.part {
+  padding-inline: $section-px;
+}
+
+.part--number-field {
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr;
+  place-items: center start;
+
+  > *:nth-child(2) {
+    justify-self: end;
+  }
+}
+
+.doc-info {
+  padding-inline: $section-px;
+
+  &__value {
+    margin-top: 0.25rem;
+  }
+}
+
+.h {
+  &__part {
+    &--switch {
+      display: grid;
+      grid-template-rows: 1fr;
+      grid-template-columns: min-content 1fr;
+      gap: 0.5rem;
+      place-items: center start;
+    }
+  }
+
+  &__label {
+    @at-root .h__part--switch #{&} {
+      grid-row: 1;
+      grid-column: 2;
+    }
+  }
+
+  &__switch {
+    @at-root .h__part--switch #{&} {
+      grid-row: 1;
+      grid-column: 1;
+      margin-top: 0;
+    }
+  }
+}
+
+.l-c {
+  &__part {
+    &--xy-slider {
+      display: grid;
+      grid-template-rows: 1fr;
+      grid-template-columns: 1fr;
+      place-items: center center;
+      aspect-ratio: 10 / 4;
+      padding-inline: 0;
+    }
+  }
+
+  &__xy-slider {
+    width: 100%;
+    height: 100%;
+
+    :global .xyslider-track-shape {
+      background-color: transparent;
+    }
+  }
+}

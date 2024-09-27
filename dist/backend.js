@@ -70,7 +70,7 @@ let u = !1;
 const G = async () => {
   u || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), u = !0);
 };
-figma.showUI(__html__, { themeColors: !0, width: 248, height: 800 });
+figma.showUI(__html__, { themeColors: !0, width: 236, height: 600 });
 const z = figma.root.documentColorProfile;
 figma.ui.postMessage({ message: "colorSpace", colorSpace: z });
 figma.ui.onmessage = async (t) => {
