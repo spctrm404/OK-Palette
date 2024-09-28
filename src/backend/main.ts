@@ -34,11 +34,11 @@ const ensureFontLoaded = async () => {
   }
 };
 
-figma.showUI(__html__, { themeColors: true, width: 236, height: 600 });
-figma.ui.postMessage({ message: 'size', value: [WIDTH, HEIGHT] });
+figma.showUI(__html__, { themeColors: true, width: WIDTH, height: HEIGHT });
+figma.ui.postMessage({ type: 'size', width: WIDTH, height: HEIGHT });
 
 const colorSpace = figma.root.documentColorProfile;
-figma.ui.postMessage({ message: 'colorSpace', value: [colorSpace] });
+figma.ui.postMessage({ type: 'colorSpace', colorSpace: colorSpace });
 
 figma.ui.onmessage = async (msg: {
   type: string;

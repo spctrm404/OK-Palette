@@ -204,6 +204,25 @@ function App() {
   }, []);
 
   useLayoutEffect(() => {
+    const messageHandler = (event: MessageEvent) => {
+      const { type, ...msg } = event.data.pluginMessage;
+
+      if (type === 'colorSpace') {
+        setDocumentColorSpace(msg.colorSpace);
+      } else if (type === 'size') {
+        const root = document.documentElement;
+        root.style.setProperty('--body-width', `${msg.width / 16}rem`);
+        root.style.setProperty('--body-height', `${msg.height / 16}rem`);
+        console.log(root);
+      }
+    };
+    window.addEventListener('message', messageHandler);
+
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
+  }, []);
+  useLayoutEffect(() => {
     if (!state.isHueRanged) {
       dispatch({
         type: 'setNumber',
@@ -214,22 +233,6 @@ function App() {
   useLayoutEffect(() => {
     setHues?.({ from: state.hueFrom, to: state.hueTo });
   }, [state.hueFrom, state.hueTo]);
-
-  // todo: need to fix this
-  useEffect(() => {
-    window.onmessage = (event) => {
-      const { message, value } = event.data.pluginMessage;
-      if (message === 'colorSpace') {
-        setDocumentColorSpace(value[0]);
-      } else if (message === 'size') {
-        const root = document.documentElement;
-        root.style.setProperty('--width', value[0]);
-        root.style.setProperty('--height', value[1]);
-      }
-    };
-  }, []);
-
-  const [testBoolean, setTestBoolean] = useState(false);
 
   return (
     <>
@@ -277,6 +280,7 @@ function App() {
             onChange={onChangeHueToHandler}
             onChangeEnd={onChangeHueToHandler}
           />
+          <div className={cx('h__gamut')}></div>
         </div>
         <div
           className={cx(

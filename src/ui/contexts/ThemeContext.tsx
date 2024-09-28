@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { LightnessTable } from '../../common/types';
 import {
   THEME_PEAK_LIGHTNESS,
   CHROMA_STEP,
@@ -32,6 +31,22 @@ import {
   camelCaseToKebabCase,
 } from '../../common/stringUtils';
 
+type LightnessConfig = {
+  [key: string]: { light: number; dark: number };
+};
+
+type colorConfig = {
+  [key: string]: {
+    reference: React.MutableRefObject<LightnessConfig>;
+    replaceName: boolean;
+    isDynamic: boolean;
+    peakChroma: number;
+    peakChromaMult: number;
+    staticHue: number;
+    hueShift: number;
+  };
+};
+
 type ThemeContextType = {
   theme: 'light' | 'dark';
   hues: { from: number; to: number };
@@ -54,130 +69,7 @@ export const ThemeContext = createContext<ThemeContextType>({
 export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // const vividsRef = useRef({
-  //   name: {
-  //     light: 0.4,
-  //     dark: 0.8,
-  //   },
-  //   onName: {
-  //     light: 1,
-  //     dark: 0.2,
-  //   },
-  //   nameContainer: {
-  //     light: 0.9,
-  //     dark: 0.3,
-  //   },
-  //   onNameContainer: {
-  //     light: 0.1,
-  //     dark: 0.9,
-  //   },
-  //   nameFixed: {
-  //     light: 0.9,
-  //     dark: 0.9,
-  //   },
-  //   onNameFixed: {
-  //     light: 0.1,
-  //     dark: 0.1,
-  //   },
-  //   nameFixedDim: {
-  //     light: 0.8,
-  //     dark: 0.8,
-  //   },
-  //   onNameFixedDim: {
-  //     light: 0.3,
-  //     dark: 0.3,
-  //   },
-  //   inverseName: {
-  //     light: 0.8,
-  //     dark: 0.4,
-  //   },
-  // });
-  // const neutralVariantsRef = useRef({
-  //   surfaceVariant: {
-  //     light: 0.9,
-  //     dark: 0.3,
-  //   },
-  //   onSurfaceVariant: {
-  //     light: 0.3,
-  //     dark: 0.8,
-  //   },
-  //   outlineVariant: {
-  //     light: 0.8,
-  //     dark: 0.3,
-  //   },
-  // });
-  // const neutralsRef = useRef({
-  //   surface: {
-  //     light: 0.98,
-  //     dark: 0.06,
-  //   },
-  //   onSurface: {
-  //     light: 0.1,
-  //     dark: 0.9,
-  //   },
-  //   surfaceContainerHighest: {
-  //     light: 0.9,
-  //     dark: 0.22,
-  //   },
-  //   surfaceContainerHigh: {
-  //     light: 0.92,
-  //     dark: 0.17,
-  //   },
-  //   surfaceContainer: {
-  //     light: 0.94,
-  //     dark: 0.12,
-  //   },
-  //   surfaceContainerLow: {
-  //     light: 0.96,
-  //     dark: 0.1,
-  //   },
-  //   surfaceContainerLowest: {
-  //     light: 1,
-  //     dark: 0.04,
-  //   },
-  //   inverseSurface: {
-  //     light: 0.2,
-  //     dark: 0.9,
-  //   },
-  //   inverseOnSurface: {
-  //     light: 0.95,
-  //     dark: 0.2,
-  //   },
-  //   surfaceTint: {
-  //     light: 0.4,
-  //     dark: 0.8,
-  //   },
-  //   outline: {
-  //     light: 0.5,
-  //     dark: 0.6,
-  //   },
-  //   bg: {
-  //     light: 0.98,
-  //     dark: 0.06,
-  //   },
-  //   onBg: {
-  //     light: 0.1,
-  //     dark: 0.9,
-  //   },
-  //   surfaceBright: {
-  //     light: 0.98,
-  //     dark: 0.24,
-  //   },
-  //   surfaceDim: {
-  //     light: 0.87,
-  //     dark: 0.06,
-  //   },
-  //   scrim: {
-  //     light: 0,
-  //     dark: 0,
-  //   },
-  //   shadow: {
-  //     light: 0,
-  //     dark: 0,
-  //   },
-  // });
-
-  const vividsRef = useRef({
+  const vividsConfigRef = useRef<LightnessConfig>({
     name: {
       light: 0.4,
       dark: 0.82, // apca -66
@@ -215,21 +107,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       dark: 0.43, // apca -16
     },
   });
-  const neutralVariantsRef = useRef({
-    surfaceVariant: {
-      light: 0.9,
-      dark: 0.35, // apca 0 - 5step
-    },
-    onSurfaceVariant: {
-      light: 0.3,
-      dark: 0.82, // apca -63
-    },
-    outlineVariant: {
-      light: 0.8,
-      dark: 0.35, // apca -0 - 5step
-    },
-  });
-  const neutralsRef = useRef({
+  const neutralsConfigRef = useRef<LightnessConfig>({
     surface: {
       light: 0.98,
       dark: 0.23, // +17
@@ -299,6 +177,86 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       dark: 0,
     },
   });
+  const neutralVariantsConfigRef = useRef<LightnessConfig>({
+    surfaceVariant: {
+      light: 0.9,
+      dark: 0.35, // apca 0 - 5step
+    },
+    onSurfaceVariant: {
+      light: 0.3,
+      dark: 0.82, // apca -63
+    },
+    outlineVariant: {
+      light: 0.8,
+      dark: 0.35, // apca -0 - 5step
+    },
+  });
+
+  const colorConfigRef = useRef<colorConfig>({
+    primary: {
+      reference: vividsConfigRef,
+      replaceName: true,
+      isDynamic: true,
+      peakChroma: 0.11,
+      peakChromaMult: 1,
+      staticHue: 0,
+      hueShift: 0,
+    },
+    secondary: {
+      reference: vividsConfigRef,
+      replaceName: true,
+      isDynamic: true,
+      peakChroma: 0.11,
+      peakChromaMult: THEME_SECONDARY_CHROMA_MULT,
+      staticHue: 0,
+      hueShift: 0,
+    },
+    tertiary: {
+      reference: vividsConfigRef,
+      replaceName: true,
+      isDynamic: true,
+      peakChroma: 0.11,
+      peakChromaMult: 1,
+      staticHue: 0,
+      hueShift: 120,
+    },
+    neutral: {
+      reference: neutralsConfigRef,
+      replaceName: false,
+      isDynamic: true,
+      peakChroma: THEME_NEUTRAL_PEAK_CHROMA,
+      peakChromaMult: 1,
+      staticHue: 0,
+      hueShift: 0,
+    },
+    neutralVariant: {
+      reference: neutralVariantsConfigRef,
+      replaceName: false,
+      isDynamic: true,
+      peakChroma: THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
+      peakChromaMult: 1,
+      staticHue: 0,
+      hueShift: 0,
+    },
+    error: {
+      reference: vividsConfigRef,
+      replaceName: true,
+      isDynamic: false,
+      peakChroma: 0.11,
+      peakChromaMult: 1,
+      staticHue: 65,
+      hueShift: 0,
+    },
+    warning: {
+      reference: vividsConfigRef,
+      replaceName: true,
+      isDynamic: false,
+      peakChroma: 0.11,
+      peakChromaMult: 1,
+      staticHue: 75,
+      hueShift: 0,
+    },
+  });
 
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [hues, setHues] = useState({ from: 0, to: 0 });
@@ -315,83 +273,47 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
-  const applyStaticHueCssProperties = useCallback(
-    (
-      lightnessTable: LightnessTable,
-      name: string,
-      peakChroma: number,
-      hue: number,
-      targetDom: HTMLElement
-    ) => {
-      Object.entries(lightnessTable).forEach(
-        ([roleName, lightnessOfThemes]) => {
-          const lightness = lightnessOfThemes[theme];
-          let chroma = chromaForLightness(
-            lightness,
-            THEME_PEAK_LIGHTNESS,
-            peakChroma
-          );
-          chroma = quantize(chroma, CHROMA_STEP);
-          let propertyName = replaceWordInCamelCase(roleName, 'name', name);
-          propertyName = camelCaseToKebabCase(propertyName);
-          propertyName = `--${propertyName}`;
-          const propertyValue = `oklch(${quantize(
-            lightness,
-            LIGHTNESS_STEP
-          )} ${chroma} ${quantize(hue, HUE_STEP)}deg)`;
-          targetDom.style.setProperty(propertyName, propertyValue);
-        }
-      );
-    },
-    [theme]
-  );
-  const applyDynamicHueCssProperties = useCallback(
-    (
-      lightnessTable: LightnessTable,
-      name: string,
-      peakChroma: number,
-      chromaMultiplier: number,
-      targetDom: HTMLElement
-    ) => {
-      Object.entries(lightnessTable).forEach(
-        ([roleName, lightnessOfThemes]) => {
-          const lightness = lightnessOfThemes[theme];
-          let chroma =
-            chromaForLightness(lightness, THEME_PEAK_LIGHTNESS, peakChroma) *
-            chromaMultiplier;
-          chroma = quantize(chroma, CHROMA_STEP);
-          let hue = hueForLightness(lightness, hues);
-          hue = quantize(hue, HUE_STEP);
-          let propertyName = replaceWordInCamelCase(roleName, 'name', name);
-          propertyName = camelCaseToKebabCase(propertyName);
-          propertyName = `--${propertyName}`;
-          const propertyValue = `oklch(${quantize(
-            lightness,
-            LIGHTNESS_STEP
-          )} ${chroma} ${hue}deg)`;
-          targetDom.style.setProperty(propertyName, propertyValue);
-        }
-      );
-    },
-    [theme, hues]
-  );
-
-  const applyStatics = useCallback(
+  const applyCssCustomProperties = useCallback(
     (targetDom: HTMLElement) => {
-      applyStaticHueCssProperties(
-        vividsRef.current,
-        'warning',
-        THEME_UTILITY_PEAK_CHROMA,
-        THEME_WARNING_HUE,
-        targetDom
-      );
-      applyStaticHueCssProperties(
-        vividsRef.current,
-        'error',
-        THEME_UTILITY_PEAK_CHROMA,
-        THEME_ERROR_HUE,
-        targetDom
-      );
+      for (const [colorGroupName, colorGroupConfig] of Object.entries(
+        colorConfigRef.current
+      )) {
+        const reference = colorGroupConfig.reference;
+        const peakChromaMult = colorGroupConfig.peakChromaMult;
+        const replaceName = colorGroupConfig.replaceName;
+        const isDynamic = colorGroupConfig.isDynamic;
+        const peakChroma = colorGroupConfig.peakChroma;
+        const staticHue = colorGroupConfig.staticHue;
+        const hueShift = colorGroupConfig.hueShift;
+        Object.entries(reference.current).forEach(
+          ([roleName, lightnessConfig]) => {
+            let lightness = lightnessConfig[theme];
+
+            let chroma =
+              chromaForLightness(lightness, THEME_PEAK_LIGHTNESS, peakChroma) *
+              peakChromaMult;
+            chroma = quantize(chroma, CHROMA_STEP);
+
+            let hue =
+              (isDynamic ? hueForLightness(lightness, hues) : staticHue) +
+              hueShift;
+            hue = quantize(hue, HUE_STEP);
+
+            let propertyName = replaceName
+              ? replaceWordInCamelCase(roleName, 'name', colorGroupName)
+              : roleName;
+            propertyName = camelCaseToKebabCase(propertyName);
+            propertyName = `--${propertyName}`;
+
+            lightness = quantize(lightness, LIGHTNESS_STEP);
+
+            targetDom.style.setProperty(
+              propertyName,
+              `oklch(${lightness} ${chroma} ${hue}deg)`
+            );
+          }
+        );
+      }
       targetDom.style.setProperty(
         '--shadow-0',
         '0 0 0 0 rgba(0, 0, 0, 0), 0 0 0 0 rgba(0, 0, 0, 0)'
@@ -440,44 +362,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
     },
-    [applyStaticHueCssProperties]
-  );
-  const applyDynamics = useCallback(
-    (targetDom: HTMLElement) => {
-      // const peakChroma =
-      //   peakChromaForLightnessAndHue(PEAK_LIGHTNESS, hues) -
-      //   P3_PEAK_CHROMA_OFFSET;
-      const peakChroma = 0.11;
-      applyDynamicHueCssProperties(
-        vividsRef.current,
-        'primary',
-        peakChroma,
-        1,
-        targetDom
-      );
-      applyDynamicHueCssProperties(
-        vividsRef.current,
-        'secondary',
-        peakChroma,
-        THEME_SECONDARY_CHROMA_MULT,
-        targetDom
-      );
-      applyDynamicHueCssProperties(
-        neutralVariantsRef.current,
-        '',
-        THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
-        1,
-        targetDom
-      );
-      applyDynamicHueCssProperties(
-        neutralsRef.current,
-        '',
-        THEME_NEUTRAL_PEAK_CHROMA,
-        1,
-        targetDom
-      );
-    },
-    [applyDynamicHueCssProperties]
+    [theme, hues]
   );
 
   useLayoutEffect(() => {
@@ -499,8 +384,6 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
     });
-
-    // 클래스 속성을 감시
     observer.observe(htmlElement, {
       attributes: true,
       attributeFilter: ['class'],
@@ -510,15 +393,11 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       observer.disconnect();
     };
   }, []);
+
   useLayoutEffect(() => {
     const root = document.documentElement;
-    applyStatics(root);
-    applyDynamics(root);
-  }, [theme]);
-  useLayoutEffect(() => {
-    const root = document.documentElement;
-    applyDynamics(root);
-  }, [hues]);
+    applyCssCustomProperties(root);
+  }, [theme, hues]);
 
   return (
     <ThemeContext.Provider

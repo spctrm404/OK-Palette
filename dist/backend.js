@@ -20,32 +20,32 @@ const L = (t) => t * Math.PI / 180, l = (t, e) => {
     y: -0.0405801784 * o + 1.1122568696 * n - 0.0716766787 * T,
     z: -0.0763812845 * o - 0.4214819784 * n + 1.5861632204 * T
   };
-}, y = (t, { x: e, y: o, z: n }) => ({
+}, H = (t, { x: e, y: o, z: n }) => ({
   r: t[0][0] * e + t[0][1] * o + t[0][2] * n,
   g: t[1][0] * e + t[1][1] * o + t[1][2] * n,
   b: t[2][0] * e + t[2][1] * o + t[2][2] * n
-}), N = (t) => y(
+}), N = (t) => H(
   [
     [3.2404542, -1.5371385, -0.4985314],
     [-0.969266, 1.8760108, 0.041556],
     [0.0556434, -0.2040259, 1.0572252]
   ],
   t
-), X = (t) => y(
+), X = (t) => H(
   [
     [2.493496911941425, -0.9313836179191239, -0.40271078445071684],
     [-0.8294889695615747, 1.7626640603183463, 0.023624685841943577],
     [0.0358458302437845, -0.0763812845057069, 0.9570942811736457]
   ],
   t
-), f = (t) => Object.fromEntries(
+), m = (t) => Object.fromEntries(
   Object.entries(t).map(([e, o]) => [
     e,
     o <= 31308e-7 ? 12.92 * o : 1.055 * Math.pow(o, 0.4166666666666667) - 0.055
   ])
 ), I = (t) => Object.fromEntries(
   Object.entries(t).map(([e, o]) => [e, O(o, 0, 1)])
-), M = (t) => A(C(t)), u = ({ r: t, g: e, b: o }) => [t, e, o].map(
+), M = (t) => A(C(t)), P = ({ r: t, g: e, b: o }) => [t, e, o].map(
   (n) => Math.round(n * 255).toString(16).padStart(2, "0").toUpperCase()
 ).join(""), b = (t, { from: e, to: o }) => {
   const n = e <= o ? o - e : o + 360 - e;
@@ -56,24 +56,24 @@ const L = (t) => t * Math.PI / 180, l = (t, e) => {
     const c = l(i / (T - 1), 0.01), a = l(
       R(c, e, o),
       1e-3
-    ), r = b(c, n), g = { l: c, c: a, h: r }, h = M(g), E = N(h), p = f(E), d = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, S = X(h), m = f(S), F = I(m), H = a === 0 || m.r <= 1 && m.g <= 1 && m.b <= 1;
+    ), r = b(c, n), g = { l: c, c: a, h: r }, h = M(g), E = N(h), p = m(E), d = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, S = X(h), f = m(S), u = I(f), F = a === 0 || f.r <= 1 && f.g <= 1 && f.b <= 1;
     s.push({
       oklch: g,
       sRgb: d,
-      dispP3: F,
-      gamut: _ ? "sRGB" : H ? "P3" : "Rec2020"
+      dispP3: u,
+      gamut: _ ? "sRGB" : F ? "P3" : "Rec2020"
     });
   }
   return s;
 };
-let P = !1;
+let y = !1;
 const G = async () => {
-  P || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), P = !0);
+  y || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), y = !0);
 };
 figma.showUI(__html__, { themeColors: !0, width: 236, height: 600 });
-figma.ui.postMessage({ message: "size", value: [236, 600] });
+figma.ui.postMessage({ type: "size", width: 236, height: 600 });
 const z = figma.root.documentColorProfile;
-figma.ui.postMessage({ message: "colorSpace", value: [z] });
+figma.ui.postMessage({ type: "colorSpace", colorSpace: z });
 figma.ui.onmessage = async (t) => {
   if (t.type === "create-palette") {
     await G();
@@ -140,7 +140,7 @@ figma.ui.onmessage = async (t) => {
   ${l(s.dispP3.r, 1e-6)}
   ${l(s.dispP3.g, 1e-6)}
   ${l(s.dispP3.b, 1e-6)}
-)`, E.name = "sRGB-hex", E.characters = `sRGB: #${u(s.sRgb)}`, p.name = "displayP3-hex", p.characters = `P3:   #${u(s.dispP3)}`, d.name = "gamut", d.characters = s.gamut;
+)`, E.name = "sRGB-hex", E.characters = `sRGB: #${P(s.sRgb)}`, p.name = "displayP3-hex", p.characters = `P3:   #${P(s.dispP3)}`, d.name = "gamut", d.characters = s.gamut;
     }), figma.currentPage.appendChild(o);
   }
 };

@@ -29,8 +29,5 @@ export type Swatch = {
   dispP3: RgbColorSpace;
   gamut: 'sRGB' | 'P3' | 'Rec2020';
 };
-export type LightnessTable = {
-  [key: string]: { light: number; dark: number };
-};
 
 export type PlaneCoord = { x: number; y: number };
