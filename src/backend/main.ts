@@ -7,6 +7,9 @@ import {
 import { createPalette, nomalRgbToHex } from '../common/colour';
 import { quantize } from '../common/numberUtils';
 
+const WIDTH = 236;
+const HEIGHT = 600;
+
 const PALETTE_PX = 48;
 const PALETTE_PY = 48;
 const PALETTE_GX = 24;
@@ -23,7 +26,6 @@ const IDX_OFFSET_X = 16;
 const IDX_OFFSET_Y = 16;
 
 let isFontLoaded = false;
-
 const ensureFontLoaded = async () => {
   if (!isFontLoaded) {
     await figma.loadFontAsync({ family: 'Martian Mono', style: 'Regular' });
@@ -33,10 +35,10 @@ const ensureFontLoaded = async () => {
 };
 
 figma.showUI(__html__, { themeColors: true, width: 236, height: 600 });
+figma.ui.postMessage({ message: 'size', value: [WIDTH, HEIGHT] });
 
 const colorSpace = figma.root.documentColorProfile;
-
-figma.ui.postMessage({ message: 'colorSpace', colorSpace });
+figma.ui.postMessage({ message: 'colorSpace', value: [colorSpace] });
 
 figma.ui.onmessage = async (msg: {
   type: string;

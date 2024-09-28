@@ -1,9 +1,9 @@
-const O = (t) => t * Math.PI / 180, l = (t, e) => {
+const L = (t) => t * Math.PI / 180, l = (t, e) => {
   const o = (e.toString().split(".")[1] || "").length;
   let n = Math.round(t / e) * e;
   return n = parseFloat(n.toFixed(o)), n;
-}, H = (t, e, o) => Math.min(Math.max(t, e), o), C = ({ l: t, c: e, h: o }) => {
-  const n = O(o);
+}, O = (t, e, o) => Math.min(Math.max(t, e), o), C = ({ l: t, c: e, h: o }) => {
+  const n = L(o);
   return {
     l: t,
     a: Math.cos(n) * e,
@@ -44,10 +44,10 @@ const O = (t) => t * Math.PI / 180, l = (t, e) => {
     o <= 31308e-7 ? 12.92 * o : 1.055 * Math.pow(o, 0.4166666666666667) - 0.055
   ])
 ), I = (t) => Object.fromEntries(
-  Object.entries(t).map(([e, o]) => [e, H(o, 0, 1)])
-), b = (t) => A(C(t)), P = ({ r: t, g: e, b: o }) => [t, e, o].map(
+  Object.entries(t).map(([e, o]) => [e, O(o, 0, 1)])
+), M = (t) => A(C(t)), u = ({ r: t, g: e, b: o }) => [t, e, o].map(
   (n) => Math.round(n * 255).toString(16).padStart(2, "0").toUpperCase()
-).join(""), M = (t, { from: e, to: o }) => {
+).join(""), b = (t, { from: e, to: o }) => {
   const n = e <= o ? o - e : o + 360 - e;
   return (e + t * n) % 360;
 }, R = (t, e, o) => e === 1 ? o * t : e === 0 ? o * (1 - t) : t <= e ? o / e * t : o / (1 - e) * (1 - t), D = (t, e, o, n) => {
@@ -56,23 +56,24 @@ const O = (t) => t * Math.PI / 180, l = (t, e) => {
     const c = l(i / (T - 1), 0.01), a = l(
       R(c, e, o),
       1e-3
-    ), r = M(c, n), S = { l: c, c: a, h: r }, h = b(S), d = N(h), p = f(d), E = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, g = X(h), m = f(g), F = I(m), L = a === 0 || m.r <= 1 && m.g <= 1 && m.b <= 1;
+    ), r = b(c, n), g = { l: c, c: a, h: r }, h = M(g), E = N(h), p = f(E), d = I(p), _ = a === 0 || p.r <= 1 && p.g <= 1 && p.b <= 1, S = X(h), m = f(S), F = I(m), H = a === 0 || m.r <= 1 && m.g <= 1 && m.b <= 1;
     s.push({
-      oklch: S,
-      sRgb: E,
+      oklch: g,
+      sRgb: d,
       dispP3: F,
-      gamut: _ ? "sRGB" : L ? "P3" : "Rec2020"
+      gamut: _ ? "sRGB" : H ? "P3" : "Rec2020"
     });
   }
   return s;
 };
-let u = !1;
+let P = !1;
 const G = async () => {
-  u || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), u = !0);
+  P || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), P = !0);
 };
 figma.showUI(__html__, { themeColors: !0, width: 236, height: 600 });
+figma.ui.postMessage({ message: "size", value: [236, 600] });
 const z = figma.root.documentColorProfile;
-figma.ui.postMessage({ message: "colorSpace", colorSpace: z });
+figma.ui.postMessage({ message: "colorSpace", value: [z] });
 figma.ui.onmessage = async (t) => {
   if (t.type === "create-palette") {
     await G();
@@ -110,26 +111,26 @@ figma.ui.onmessage = async (t) => {
           color: i < e.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
         }
       ];
-      const S = figma.createText();
-      a.appendChild(S);
+      const g = figma.createText();
+      a.appendChild(g);
       const h = figma.createText();
       a.appendChild(h);
-      const d = figma.createText();
-      a.appendChild(d);
+      const E = figma.createText();
+      a.appendChild(E);
       const p = figma.createText();
       a.appendChild(p);
-      const E = figma.createText();
-      a.appendChild(E), a.children.forEach((_) => {
+      const d = figma.createText();
+      a.appendChild(d), a.children.forEach((_) => {
         if (_.type === "TEXT") {
-          const g = _;
-          g.fontName = { family: "Martian Mono", style: "Regular" }, g.fontSize = 12, g.lineHeight = { value: 16, unit: "PIXELS" }, g.fills = [
+          const S = _;
+          S.fontName = { family: "Martian Mono", style: "Regular" }, S.fontSize = 12, S.lineHeight = { value: 16, unit: "PIXELS" }, S.fills = [
             {
               type: "SOLID",
               color: i < e.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
             }
           ];
         }
-      }), S.name = "oklch", S.characters = `oklch(${l(
+      }), g.name = "oklch", g.characters = `oklch(${l(
         s.oklch.l,
         0.01
       )} ${l(s.oklch.c, 1e-3)} ${l(
@@ -139,7 +140,7 @@ figma.ui.onmessage = async (t) => {
   ${l(s.dispP3.r, 1e-6)}
   ${l(s.dispP3.g, 1e-6)}
   ${l(s.dispP3.b, 1e-6)}
-)`, d.name = "sRGB-hex", d.characters = `sRGB: #${P(s.sRgb)}`, p.name = "displayP3-hex", p.characters = `P3:   #${P(s.dispP3)}`, E.name = "gamut", E.characters = s.gamut;
+)`, E.name = "sRGB-hex", E.characters = `sRGB: #${u(s.sRgb)}`, p.name = "displayP3-hex", p.characters = `P3:   #${u(s.dispP3)}`, d.name = "gamut", d.characters = s.gamut;
     }), figma.currentPage.appendChild(o);
   }
 };

@@ -130,8 +130,6 @@ function App() {
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const isHueRangedRef = useRef(state.isHueRanged);
-  const hueFromRef = useRef(state.hueFrom);
   const [documentColorSpace, setDocumentColorSpace] = useState<
     'LEGACY' | 'SRGB' | 'DISPLAY_P3'
   >('LEGACY');
@@ -140,8 +138,8 @@ function App() {
     console.log('lightnessStep', state.swatchStep);
     console.log('peakLightness', state.peakLightness);
     console.log('peakChroma', state.peakChroma);
-    console.log('hue', state.hueFrom);
-    console.log('hue', state.hueTo);
+    console.log('hueFrom', state.hueFrom);
+    console.log('hueTo', state.hueTo);
     parent.postMessage(
       {
         pluginMessage: {
@@ -185,14 +183,12 @@ function App() {
       type: 'setBoolean',
       payload: { field: 'isHueRanged', value: newBoolean },
     });
-    isHueRangedRef.current = newBoolean;
   }, []);
   const onChangeHueFromHandler = useCallback((newNumber: number) => {
     dispatch({
       type: 'setNumber',
       payload: { field: 'hueFrom', value: newNumber },
     });
-    hueFromRef.current = newNumber;
   }, []);
   const onChangeHueToHandler = useCallback((newNumber: number) => {
     dispatch({
@@ -215,16 +211,20 @@ function App() {
       });
     }
   }, [state.isHueRanged, state.hueFrom]);
-
   useLayoutEffect(() => {
     setHues?.({ from: state.hueFrom, to: state.hueTo });
   }, [state.hueFrom, state.hueTo]);
 
+  // todo: need to fix this
   useEffect(() => {
     window.onmessage = (event) => {
-      const { message, colorSpace } = event.data.pluginMessage;
+      const { message, value } = event.data.pluginMessage;
       if (message === 'colorSpace') {
-        setDocumentColorSpace(colorSpace);
+        setDocumentColorSpace(value[0]);
+      } else if (message === 'size') {
+        const root = document.documentElement;
+        root.style.setProperty('--width', value[0]);
+        root.style.setProperty('--height', value[1]);
       }
     };
   }, []);

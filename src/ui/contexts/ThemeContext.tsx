@@ -360,10 +360,8 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
             chromaForLightness(lightness, THEME_PEAK_LIGHTNESS, peakChroma) *
             chromaMultiplier;
           chroma = quantize(chroma, CHROMA_STEP);
-
           let hue = hueForLightness(lightness, hues);
           hue = quantize(hue, HUE_STEP);
-
           let propertyName = replaceWordInCamelCase(roleName, 'name', name);
           propertyName = camelCaseToKebabCase(propertyName);
           propertyName = `--${propertyName}`;
@@ -378,159 +376,148 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     [theme, hues]
   );
 
-  // useLayoutEffect(() => {
-  //   const initTheme = window.matchMedia('(prefers-color-scheme: light)').matches
-  //     ? 'light'
-  //     : 'dark';
-  //   setTheme(initTheme);
-  // }, []);
+  const applyStatics = useCallback(
+    (targetDom: HTMLElement) => {
+      applyStaticHueCssProperties(
+        vividsRef.current,
+        'warning',
+        THEME_UTILITY_PEAK_CHROMA,
+        THEME_WARNING_HUE,
+        targetDom
+      );
+      applyStaticHueCssProperties(
+        vividsRef.current,
+        'error',
+        THEME_UTILITY_PEAK_CHROMA,
+        THEME_ERROR_HUE,
+        targetDom
+      );
+      targetDom.style.setProperty(
+        '--shadow-0',
+        '0 0 0 0 rgba(0, 0, 0, 0), 0 0 0 0 rgba(0, 0, 0, 0)'
+      );
+      if (theme === 'light') {
+        targetDom.style.setProperty(
+          '--shadow-1',
+          '0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30), 0rem .0625rem .1875rem .0625rem rgba(0, 0, 0, 0.15)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-2',
+          '0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30), 0rem .125rem .375rem .125rem rgba(0, 0, 0, 0.15)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-3',
+          '0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30), 0rem .0625rem .1875rem .0625rem rgba(0, 0, 0, 0.15)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-4',
+          '0rem .125rem .1875rem 0rem rgba(0, 0, 0, 0.30), 0rem .375rem .625rem .25rem rgba(0, 0, 0, 0.15)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-5',
+          '0rem .25rem .25rem 0rem rgba(0, 0, 0, 0.30), 0rem .5rem .75rem .375rem rgba(0, 0, 0, 0.15)'
+        );
+      } else {
+        targetDom.style.setProperty(
+          '--shadow-1',
+          '0rem .0625rem .1875rem .0625rem rgba(0, 0, 0, 0.15), 0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-2',
+          '0rem .125rem .375rem .125rem rgba(0, 0, 0, 0.15), 0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-3',
+          '0rem .25rem .5rem .1875rem rgba(0, 0, 0, 0.15), 0rem .0625rem .1875rem 0rem rgba(0, 0, 0, 0.30)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-4',
+          '0rem .375rem .625rem .25rem rgba(0, 0, 0, 0.15), 0rem .125rem .1875rem 0rem rgba(0, 0, 0, 0.30)'
+        );
+        targetDom.style.setProperty(
+          '--shadow-5',
+          '0rem .5rem .75rem .375rem rgba(0, 0, 0, 0.15), 0rem .25rem .25rem 0rem rgba(0, 0, 0, 0.30)'
+        );
+      }
+    },
+    [applyStaticHueCssProperties]
+  );
+  const applyDynamics = useCallback(
+    (targetDom: HTMLElement) => {
+      // const peakChroma =
+      //   peakChromaForLightnessAndHue(PEAK_LIGHTNESS, hues) -
+      //   P3_PEAK_CHROMA_OFFSET;
+      const peakChroma = 0.11;
+      applyDynamicHueCssProperties(
+        vividsRef.current,
+        'primary',
+        peakChroma,
+        1,
+        targetDom
+      );
+      applyDynamicHueCssProperties(
+        vividsRef.current,
+        'secondary',
+        peakChroma,
+        THEME_SECONDARY_CHROMA_MULT,
+        targetDom
+      );
+      applyDynamicHueCssProperties(
+        neutralVariantsRef.current,
+        '',
+        THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
+        1,
+        targetDom
+      );
+      applyDynamicHueCssProperties(
+        neutralsRef.current,
+        '',
+        THEME_NEUTRAL_PEAK_CHROMA,
+        1,
+        targetDom
+      );
+    },
+    [applyDynamicHueCssProperties]
+  );
+
   useLayoutEffect(() => {
     const htmlElement = document.documentElement;
-    const isLight = htmlElement.classList.contains('figma-light');
-    if (isLight) {
+    if (htmlElement.classList.contains('figma-light')) {
       setTheme('light');
-      return;
-    }
-    const isDark = htmlElement.classList.contains('figma-dark');
-    if (isDark) {
+    } else if (htmlElement.classList.contains('figma-dark')) {
       setTheme('dark');
-      return;
     }
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          if (htmlElement.classList.contains('figma-light')) {
+            setTheme('light');
+          } else if (htmlElement.classList.contains('figma-dark')) {
+            setTheme('dark');
+          }
+        }
+      });
+    });
+
+    // 클래스 속성을 감시
+    observer.observe(htmlElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
   useLayoutEffect(() => {
-    const body = document.body;
-    body.dataset.theme = theme;
+    const root = document.documentElement;
+    applyStatics(root);
+    applyDynamics(root);
   }, [theme]);
   useLayoutEffect(() => {
     const root = document.documentElement;
-    // const peakChroma =
-    //   peakChromaForLightnessAndHue(PEAK_LIGHTNESS, hues) -
-    //   P3_PEAK_CHROMA_OFFSET;
-    const peakChroma = 0.11;
-    applyDynamicHueCssProperties(
-      vividsRef.current,
-      'primary',
-      peakChroma,
-      1,
-      root
-    );
-    applyDynamicHueCssProperties(
-      vividsRef.current,
-      'secondary',
-      peakChroma,
-      THEME_SECONDARY_CHROMA_MULT,
-      root
-    );
-    applyStaticHueCssProperties(
-      vividsRef.current,
-      'warning',
-      THEME_UTILITY_PEAK_CHROMA,
-      THEME_WARNING_HUE,
-      root
-    );
-    applyStaticHueCssProperties(
-      vividsRef.current,
-      'error',
-      THEME_UTILITY_PEAK_CHROMA,
-      THEME_ERROR_HUE,
-      root
-    );
-    applyDynamicHueCssProperties(
-      neutralVariantsRef.current,
-      '',
-      THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
-      1,
-      root
-    );
-    applyDynamicHueCssProperties(
-      neutralsRef.current,
-      '',
-      THEME_NEUTRAL_PEAK_CHROMA,
-      1,
-      root
-    );
-    root.style.setProperty(
-      '--shadow-0',
-      '0 0 0 0 rgba(0, 0, 0, 0), 0 0 0 0 rgba(0, 0, 0, 0)'
-    );
-    if (theme === 'light') {
-      root.style.setProperty(
-        '--shadow-1',
-        '0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30), 0rem .0625rem .1875rem .0625rem rgba(0, 0, 0, 0.15)'
-      );
-      root.style.setProperty(
-        '--shadow-2',
-        '0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30), 0rem .125rem .375rem .125rem rgba(0, 0, 0, 0.15)'
-      );
-      root.style.setProperty(
-        '--shadow-3',
-        '0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30), 0rem .0625rem .1875rem .0625rem rgba(0, 0, 0, 0.15)'
-      );
-      root.style.setProperty(
-        '--shadow-4',
-        '0rem .125rem .1875rem 0rem rgba(0, 0, 0, 0.30), 0rem .375rem .625rem .25rem rgba(0, 0, 0, 0.15)'
-      );
-      root.style.setProperty(
-        '--shadow-5',
-        '0rem .25rem .25rem 0rem rgba(0, 0, 0, 0.30), 0rem .5rem .75rem .375rem rgba(0, 0, 0, 0.15)'
-      );
-    } else {
-      root.style.setProperty(
-        '--shadow-1',
-        '0rem .0625rem .1875rem .0625rem rgba(0, 0, 0, 0.15), 0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30)'
-      );
-      root.style.setProperty(
-        '--shadow-2',
-        '0rem .125rem .375rem .125rem rgba(0, 0, 0, 0.15), 0rem .0625rem .125rem 0rem rgba(0, 0, 0, 0.30)'
-      );
-      root.style.setProperty(
-        '--shadow-3',
-        '0rem .25rem .5rem .1875rem rgba(0, 0, 0, 0.15), 0rem .0625rem .1875rem 0rem rgba(0, 0, 0, 0.30)'
-      );
-      root.style.setProperty(
-        '--shadow-4',
-        '0rem .375rem .625rem .25rem rgba(0, 0, 0, 0.15), 0rem .125rem .1875rem 0rem rgba(0, 0, 0, 0.30)'
-      );
-      root.style.setProperty(
-        '--shadow-5',
-        '0rem .5rem .75rem .375rem rgba(0, 0, 0, 0.15), 0rem .25rem .25rem 0rem rgba(0, 0, 0, 0.30)'
-      );
-    }
-  }, [theme]);
-  useLayoutEffect(() => {
-    const root = document.documentElement;
-    // const peakChroma =
-    //   peakChromaForLightnessAndHue(PEAK_LIGHTNESS, hues) -
-    //   P3_PEAK_CHROMA_OFFSET;
-    const peakChroma = 0.11;
-    applyDynamicHueCssProperties(
-      vividsRef.current,
-      'primary',
-      peakChroma,
-      1,
-      root
-    );
-    applyDynamicHueCssProperties(
-      vividsRef.current,
-      'secondary',
-      peakChroma,
-      THEME_SECONDARY_CHROMA_MULT,
-      root
-    );
-    applyDynamicHueCssProperties(
-      neutralVariantsRef.current,
-      '',
-      THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
-      1,
-      root
-    );
-    applyDynamicHueCssProperties(
-      neutralsRef.current,
-      '',
-      THEME_NEUTRAL_PEAK_CHROMA,
-      1,
-      root
-    );
+    applyDynamics(root);
   }, [hues]);
 
   return (
