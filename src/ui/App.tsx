@@ -13,6 +13,10 @@ import {
   HUE_STEP,
   P3_CHROMA_LIMIT,
 } from '../common/constants';
+// import {
+//   peakChromaAndLightnessForHue,
+//   LightnessAndChromaPeaksOfHues,
+// } from '../common/colour';
 import { PlaneCoord } from '../common/types';
 import { ThemeContext } from './contexts/ThemeContext';
 import Button from './components/Button/Button';
@@ -25,6 +29,7 @@ import ToggleButton from './components/ToggleButton/ToggleButton';
 import XYSlider from './components/XYSlider/XYSlider';
 import st from './_App.module.scss';
 import classNames from 'classnames/bind';
+import { quantize } from '../common/numberUtils';
 
 const cx = classNames.bind(st);
 
