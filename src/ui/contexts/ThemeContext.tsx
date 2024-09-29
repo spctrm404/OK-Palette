@@ -1,5 +1,3 @@
-// todo: observe html class
-
 import {
   createContext,
   useCallback,
