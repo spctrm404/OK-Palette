@@ -1,4 +1,10 @@
-// import { inGamut } from 'culori';
+import { inGamut } from 'culori';
+
+export const culoriTest = () => {
+  const rgb = inGamut('rgb');
+  console.log(rgb);
+};
+
 import {
   LchColorSpace,
   LabColorSpace,

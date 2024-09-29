@@ -8,7 +8,8 @@
     "build-backend": "vite build --config vite-backend.config.ts",
     "build-ui": "vite build --config vite-ui.config.ts",
     "dev-backend": "vite build --config vite-backend.config.ts --watch",
-    "dev-ui": "vite build --config vite-ui.config.ts --watch"
+    "dev-ui": "vite build --config vite-ui.config.ts --watch",
+    "extract": "npx vite build --config vite-culori.config.ts"
   },
   "repository": {
     "type": "git",

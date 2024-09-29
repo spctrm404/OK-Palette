@@ -17,6 +17,7 @@ import {
 //   peakChromaAndLightnessForHue,
 //   LightnessAndChromaPeaksOfHues,
 // } from '../common/colour';
+import { culoriTest } from '../common/colour';
 import { PlaneCoord } from '../common/types';
 import { ThemeContext } from './contexts/ThemeContext';
 import Button from './components/Button/Button';
@@ -238,6 +239,8 @@ function App() {
   useLayoutEffect(() => {
     setHues?.({ from: state.hueFrom, to: state.hueTo });
   }, [state.hueFrom, state.hueTo]);
+
+  culoriTest();
 
   return (
     <>
