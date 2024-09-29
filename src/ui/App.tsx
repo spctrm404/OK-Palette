@@ -6,6 +6,7 @@ import {
   useReducer,
   useRef,
   useLayoutEffect,
+  useId,
 } from 'react';
 import {
   LIGHTNESS_STEP,
@@ -246,6 +247,14 @@ function App() {
     setHues?.({ from: state.hueFrom, to: state.hueTo });
   }, [state.hueFrom, state.hueTo]);
 
+  const hueRangedId = useId();
+  const hueFromId = useId();
+  const hueToId = useId();
+  const lcId = useId();
+  const lId = useId();
+  const cId = useId();
+  const stepId = useId();
+
   return (
     <>
       <div className={cx('section', 'doc-info')}>
@@ -262,9 +271,11 @@ function App() {
       <div className={cx('section', 'h')}>
         <div className={cx('section-label', 'h__section-label')}>Hue</div>
         <div className={cx('part', 'h__part', 'h__part--switch')}>
-          <div className={cx('label', 'h__label')}>Ranged</div>
+          <div className={cx('label', 'h__label')} id={hueRangedId}>
+            Ranged
+          </div>
           <Switch
-            // aria-labelledby={huesTitleId}
+            aria-labelledby={hueRangedId}
             className={cx('h__switch')}
             isSelected={state.isHueRanged}
             onChange={onChangeHueRangedHandler}
@@ -272,7 +283,7 @@ function App() {
         </div>
         <div className={cx('part', 'h__part', 'h__part--slider')}>
           <Slider
-            // aria-labelledby={huesTitleId}
+            aria-labelledby={hueFromId}
             className={cx('h__slider', 'h__slider--from')}
             value={state.hueFrom}
             minValue={0}
@@ -282,7 +293,7 @@ function App() {
             onChangeEnd={onChangeHueFromHandler}
           />
           <Slider
-            // aria-labelledby={huesTitleId}
+            aria-labelledby={hueToId}
             className={cx('h__slider', 'h__slider--to')}
             isDisabled={!state.isHueRanged}
             value={state.hueTo}
@@ -303,9 +314,11 @@ function App() {
           )}
         >
           <div className={cx('number-field-group', 'h__number-field-group')}>
-            <div className={cx('label', 'h__label')}>From</div>
+            <div className={cx('label', 'h__label')} id={hueFromId}>
+              From
+            </div>
             <NumberField
-              // aria-labelledby={huesTitleId}
+              aria-labelledby={hueFromId}
               className={cx('h__number-field', 'h__number-field--from')}
               value={state.hueFrom}
               minValue={0}
@@ -316,9 +329,11 @@ function App() {
             />
           </div>
           <div className={cx('number-field-group', 'h__number-field-group')}>
-            <div className={cx('label', 'h__label')}>To</div>
+            <div className={cx('label', 'h__label')} id={hueToId}>
+              To
+            </div>
             <NumberField
-              // aria-labelledby={huesTitleId}
+              aria-labelledby={hueToId}
               className={cx('h__number-field', 'h__number-field--to')}
               isDisabled={!state.isHueRanged}
               value={state.hueTo}
@@ -333,12 +348,12 @@ function App() {
       </div>
       <div className={cx('divider')}></div>
       <div className={cx('section', 'l-c')}>
-        <div className={cx('section-label', 'l-c__section-label')}>
+        <div className={cx('section-label', 'l-c__section-label')} id={lcId}>
           Lightness & Chroma
         </div>
         <div className={cx('part', 'l-c__part', 'l-c__part--xy-slider')}>
           <XYSlider
-            // aria-labelledby={lAndCTitleId}
+            aria-labelledby={lcId}
             className={cx('l-c__xy-slider')}
             minValue={{ x: 0, y: 0 }}
             maxValue={{ x: 1, y: DISP_P3_CHROMA_LIMIT }}
@@ -360,9 +375,11 @@ function App() {
           )}
         >
           <div className={cx('number-field-group', 'l__number-field-group')}>
-            <div className={cx('label', 'l__label')}>Lightness</div>
+            <div className={cx('label', 'l__label')} id={lId}>
+              Lightness
+            </div>
             <NumberField
-              // aria-labelledby={lAndCTitleId}
+              aria-labelledby={lId}
               className={cx('l-c__number-field', 'l-c__number-field--l')}
               value={state.peakLightness}
               minValue={0}
@@ -373,9 +390,11 @@ function App() {
             />
           </div>
           <div className={cx('number-field-group', 'l__number-field-group')}>
-            <div className={cx('label', 'l__label')}>Chroma</div>
+            <div className={cx('label', 'l__label')} id={cId}>
+              Chroma
+            </div>
             <NumberField
-              // aria-labelledby={lAndCTitleId}
+              aria-labelledby={cId}
               className={cx('l-c__number-field', 'l-c__number-field--c')}
               value={state.peakChroma}
               minValue={0}
@@ -387,16 +406,33 @@ function App() {
           </div>
         </div>
       </div>
-      {/* <div className="step">
-        <Radio
-          className={cx('step__radio')}
-          radioItems={radioItemsRef.current}
-          value={`${state.swatchStep}`}
-          onChange={onChangeSwatchStepHandler}
-          orientation="horizontal"
-        />
-      </div> */}
-      <Button buttontype="filled" text="Create" onPress={sendMsg} />
+      <div className={cx('divider')}></div>
+      <div className={cx('section', 'step')}>
+        <div className={cx('section-label', 'step__section-label')} id={stepId}>
+          Swatch Step
+        </div>
+        <div className={cx('part', 'step__part')}>
+          <Radio
+            aria-labelledby={stepId}
+            className={cx('step__radio')}
+            radioItems={radioItemsRef.current}
+            value={`${state.swatchStep}`}
+            onChange={onChangeSwatchStepHandler}
+            orientation="horizontal"
+          />
+        </div>
+      </div>
+      <div className={cx('divider')}></div>
+      <div className={cx('section', 'create')}>
+        <div className={cx('part', 'create__part')}>
+          <Button
+            className={cx('create__btn')}
+            buttontype="filled"
+            text="Create"
+            onPress={sendMsg}
+          />
+        </div>
+      </div>
     </>
   );
 }

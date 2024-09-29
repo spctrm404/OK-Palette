@@ -39,7 +39,7 @@ body {
 .divider {
   height: 0.0625rem;
   margin-block: 1.125rem;
-  background-color: var(--outline);
+  background-color: var(--outline-variant);
 }
 
 .part {
@@ -50,7 +50,11 @@ body {
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr 1fr;
-  place-items: center start;
+  place-items: center center;
+
+  > *:nth-child(1) {
+    justify-self: start;
+  }
 
   > *:nth-child(2) {
     justify-self: end;
@@ -71,17 +75,25 @@ body {
       display: grid;
       grid-template-rows: 1fr;
       grid-template-columns: min-content 1fr;
-      gap: 0.5rem;
-      place-items: center start;
-      margin-top: 0.5rem;
+      place-items: center center;
+      margin-top: 0.75rem;
+
+      > *:nth-child(1) {
+        justify-self: start;
+      }
+
+      > *:nth-child(2) {
+        justify-self: end;
+      }
     }
 
     &--slider {
       display: grid;
       grid-template-rows: 1fr 1fr;
       grid-template-columns: 1fr;
-      place-items: stretch stretch;
+      place-items: center stretch;
       padding-inline: 0.375rem;
+      margin-top: 0.25rem;
 
       :global .slider-track-active {
         background-color: transparent !important;
@@ -91,19 +103,23 @@ body {
         background-color: transparent !important;
       }
     }
+
+    &--number-field {
+      margin-top: 0.25rem;
+    }
   }
 
   &__label {
     @at-root .h__part--switch #{&} {
       grid-row: 1;
-      grid-column: 2;
+      grid-column: 1;
     }
   }
 
   &__switch {
     @at-root .h__part--switch #{&} {
       grid-row: 1;
-      grid-column: 1;
+      grid-column: 2;
       margin-top: 0;
     }
   }
@@ -125,7 +141,7 @@ body {
     grid-column: 1;
     place-self: center center;
     width: $width;
-    height: 1.5rem;
+    height: 1.25rem;
     background-image: linear-gradient(
       to right in oklch,
       oklch(67% 0.305 0deg),
@@ -507,9 +523,14 @@ body {
       display: grid;
       grid-template-rows: 1fr;
       grid-template-columns: 1fr;
-      place-items: center center;
+      place-items: stretch stretch;
       aspect-ratio: 10 / 4;
       padding-inline: 0;
+      margin-top: -0.375rem;
+    }
+
+    &--number-field {
+      margin-top: -0.375rem;
     }
   }
 
@@ -518,7 +539,13 @@ body {
     height: 100%;
 
     :global .xyslider-track-shape {
-      background-color: transparent;
+      // background-color: transparent;
     }
+  }
+}
+
+.create {
+  &__btn {
+    width: 100%;
   }
 }
