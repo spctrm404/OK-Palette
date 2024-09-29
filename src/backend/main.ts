@@ -1,10 +1,10 @@
+import { Swatch, Palette } from '../common/types';
 import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
   HUE_STEP,
-  P3_CHROMA_LIMIT,
+  RGB_FLOAT_PRECISION,
 } from '../common/constants';
-import { createPalette, nomalRgbToHex } from '../common/colour';
 import { quantize } from '../common/numberUtils';
 
 const WIDTH = 236;
@@ -40,39 +40,28 @@ figma.ui.postMessage({ type: 'size', width: WIDTH, height: HEIGHT });
 const colorSpace = figma.root.documentColorProfile;
 figma.ui.postMessage({ type: 'colorSpace', colorSpace: colorSpace });
 
-figma.ui.onmessage = async (msg: {
-  type: string;
-  swatchStep: number;
-  peakLightness: number;
-  peakChroma: number;
-  hues: { from: number; to: number };
-}) => {
+figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
   if (msg.type === 'create-palette') {
     await ensureFontLoaded();
 
-    const palette = createPalette(
-      msg.swatchStep,
-      msg.peakLightness,
-      msg.peakChroma,
-      msg.hues
-    );
+    const palette = msg.palette;
 
     const nodes: SceneNode[] = [];
     const paletteFrame = figma.createFrame();
-    paletteFrame.name = `OKP-step${msg.swatchStep}_l${quantize(
-      100 * msg.peakLightness,
+    paletteFrame.name = `OKP-step${palette.swatchStep}_l${quantize(
+      100 * palette.peakLightness,
       1
-    )}_c${quantize(100 * msg.peakChroma, 0.1)}_h${quantize(
-      msg.hues.from,
+    )}_c${quantize(100 * palette.peakChroma, 0.1)}_h${quantize(
+      palette.hues.from,
       1
-    )}-${quantize(msg.hues.to, 1)}`;
+    )}-${quantize(palette.hues.to, 1)}`;
     const { x: centerX, y: centerY } = figma.viewport.center;
     paletteFrame.x = centerX;
     paletteFrame.y = centerY;
     paletteFrame.resize(
       2 * PALETTE_PX +
-        palette.length * SWATCH_W +
-        (palette.length - 1) * PALETTE_GX,
+        palette.swatches.length * SWATCH_W +
+        (palette.swatches.length - 1) * PALETTE_GX,
       2 * PALETTE_PY + SWATCH_H
     );
     paletteFrame.fills = [
@@ -82,17 +71,26 @@ figma.ui.onmessage = async (msg: {
       },
     ];
 
-    palette.forEach((aPalette, idx) => {
+    palette.swatches.forEach((aSwatch, idx) => {
       const swatchFrame = figma.createFrame();
       paletteFrame.appendChild(swatchFrame);
-      swatchFrame.name = `Swatch-${idx * msg.swatchStep}`;
+      swatchFrame.name = `Swatch-${idx * palette.swatchStep}`;
       swatchFrame.layoutMode = 'VERTICAL';
       swatchFrame.layoutSizingHorizontal = 'FIXED';
       swatchFrame.layoutSizingVertical = 'FIXED';
       swatchFrame.x = PALETTE_PX + idx * (SWATCH_W + PALETTE_GX);
       swatchFrame.y = PALETTE_PY;
       swatchFrame.resize(SWATCH_W, SWATCH_H);
-      swatchFrame.fills = [{ type: 'SOLID', color: aPalette.dispP3 }];
+      swatchFrame.fills = [
+        {
+          type: 'SOLID',
+          color: {
+            r: aSwatch.dispP3.r,
+            g: aSwatch.dispP3.g,
+            b: aSwatch.dispP3.b,
+          },
+        },
+      ];
 
       const infoFrame = figma.createFrame();
       swatchFrame.appendChild(infoFrame);
@@ -113,7 +111,7 @@ figma.ui.onmessage = async (msg: {
       lightnessText.fontName = { family: 'Martian Mono', style: 'Bold' };
       lightnessText.fontSize = IDX_FONTSIZE;
       lightnessText.lineHeight = { value: IDX_FONTSIZE, unit: 'PIXELS' };
-      lightnessText.characters = `${idx * msg.swatchStep}`;
+      lightnessText.characters = `${idx * palette.swatchStep}`;
       lightnessText.layoutPositioning = 'ABSOLUTE';
       lightnessText.x = SWATCH_W - lightnessText.width + IDX_OFFSET_X;
       lightnessText.y = SWATCH_H - lightnessText.height + IDX_OFFSET_Y;
@@ -121,7 +119,7 @@ figma.ui.onmessage = async (msg: {
         {
           type: 'SOLID',
           color:
-            idx < palette.length / 2
+            idx < palette.swatches.length / 2
               ? { r: 1, g: 1, b: 1 }
               : { r: 0, g: 0, b: 0 },
         },
@@ -148,7 +146,7 @@ figma.ui.onmessage = async (msg: {
             {
               type: 'SOLID',
               color:
-                idx < palette.length / 2
+                idx < palette.swatches.length / 2
                   ? { r: 1, g: 1, b: 1 }
                   : { r: 0, g: 0, b: 0 },
             },
@@ -157,30 +155,24 @@ figma.ui.onmessage = async (msg: {
       });
 
       okLChText.name = 'oklch';
-      okLChText.characters = `oklch(${quantize(
-        aPalette.oklch.l,
-        LIGHTNESS_STEP
-      )} ${quantize(aPalette.oklch.c, CHROMA_STEP)} ${quantize(
-        aPalette.oklch.h,
-        HUE_STEP
-      )})`;
+      okLChText.characters = `oklch(${aSwatch.oklch.l} ${aSwatch.oklch.c} ${aSwatch.oklch.h})`;
 
       p3RGBText.name = 'displayP3-rgb';
       p3RGBText.fontName = { family: 'Martian Mono', style: 'Regular' };
       p3RGBText.characters = `color(display-p3
-  ${quantize(aPalette.dispP3.r, 0.000001)}
-  ${quantize(aPalette.dispP3.g, 0.000001)}
-  ${quantize(aPalette.dispP3.b, 0.000001)}
+  ${quantize(aSwatch.dispP3.r, RGB_FLOAT_PRECISION)}
+  ${quantize(aSwatch.dispP3.g, RGB_FLOAT_PRECISION)}
+  ${quantize(aSwatch.dispP3.b, RGB_FLOAT_PRECISION)}
 )`;
 
       sRGBHexText.name = 'sRGB-hex';
-      sRGBHexText.characters = `sRGB: #${nomalRgbToHex(aPalette.sRgb)}`;
+      sRGBHexText.characters = `sRGB: #${aSwatch.sRgbHex}`;
 
       p3HexText.name = 'displayP3-hex';
-      p3HexText.characters = `P3:   #${nomalRgbToHex(aPalette.dispP3)}`;
+      p3HexText.characters = `P3:   #${aSwatch.dispP3Hex}`;
 
       gamutText.name = 'gamut';
-      gamutText.characters = aPalette.gamut;
+      gamutText.characters = aSwatch.gamut;
     });
 
     figma.currentPage.appendChild(paletteFrame);

@@ -11,13 +11,9 @@ import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
   HUE_STEP,
-  P3_CHROMA_LIMIT,
+  DISP_P3_CHROMA_LIMIT,
 } from '../common/constants';
-// import {
-//   peakChromaAndLightnessForHue,
-//   LightnessAndChromaPeaksOfHues,
-// } from '../common/colour';
-import { PlaneCoord } from '../common/types';
+import { createPalette } from '../common/colour';
 import { ThemeContext } from './contexts/ThemeContext';
 import Button from './components/Button/Button';
 import IconButton from './components/IconButton/IconButton';
@@ -32,6 +28,11 @@ import classNames from 'classnames/bind';
 import { quantize } from '../common/numberUtils';
 
 const cx = classNames.bind(st);
+
+type PlaneCoord = {
+  x: number;
+  y: number;
+};
 
 type PaletteParam = {
   swatchStep: number;
@@ -145,14 +146,21 @@ function App() {
     console.log('peakChroma', state.peakChroma);
     console.log('hueFrom', state.hueFrom);
     console.log('hueTo', state.hueTo);
+    const palette = createPalette(
+      state.swatchStep,
+      state.peakLightness,
+      state.peakChroma,
+      {
+        from: state.hueFrom,
+        to: state.hueTo,
+      }
+    );
+    console.log(palette);
     parent.postMessage(
       {
         pluginMessage: {
           type: 'create-palette',
-          swatchStep: state.swatchStep,
-          peakLightness: state.peakLightness,
-          peakChroma: state.peakChroma,
-          hues: { from: state.hueFrom, to: state.hueTo },
+          palette: palette,
         },
       },
       '*'
@@ -218,7 +226,6 @@ function App() {
         const root = document.documentElement;
         root.style.setProperty('--body-width', `${msg.width / 16}rem`);
         root.style.setProperty('--body-height', `${msg.height / 16}rem`);
-        console.log(root);
       }
     };
     window.addEventListener('message', messageHandler);
@@ -334,7 +341,7 @@ function App() {
             // aria-labelledby={lAndCTitleId}
             className={cx('l-c__xy-slider')}
             minValue={{ x: 0, y: 0 }}
-            maxValue={{ x: 1, y: P3_CHROMA_LIMIT }}
+            maxValue={{ x: 1, y: DISP_P3_CHROMA_LIMIT }}
             step={{ x: LIGHTNESS_STEP, y: CHROMA_STEP }}
             value={{
               x: state.peakLightness,
@@ -372,7 +379,7 @@ function App() {
               className={cx('l-c__number-field', 'l-c__number-field--c')}
               value={state.peakChroma}
               minValue={0}
-              maxValue={P3_CHROMA_LIMIT}
+              maxValue={DISP_P3_CHROMA_LIMIT}
               step={CHROMA_STEP}
               onChange={onChangeChromaHandler}
               noButton={true}

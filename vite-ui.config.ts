@@ -38,7 +38,6 @@ export default defineConfig({
                 );
                 const destPath = path.resolve(rootOutputDir, fileName);
 
-                // 파일을 루트 폴더에 복사
                 fs.copyFileSync(filePath, destPath);
                 console.log(`Copied ${fileName} to root directory.`);
               });

@@ -5,16 +5,20 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Hues } from '../../common/types';
 import {
   THEME_PEAK_LIGHTNESS,
   CHROMA_STEP,
   LIGHTNESS_STEP,
   HUE_STEP,
-  // THEME_PEAK_CHROMA_HEADROOM,
+  THEME_PEAK_CHROMA,
   THEME_SECONDARY_CHROMA_MULT,
-  THEME_UTILITY_PEAK_CHROMA,
   THEME_WARNING_HUE,
+  THEME_WARNING_PEAK_LIGHTNESS,
+  THEME_WARNING_PEAK_CHROMA,
   THEME_ERROR_HUE,
+  THEME_ERROR_PEAK_LIGHTNESS,
+  THEME_ERROR_PEAK_CHROMA,
   THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
   THEME_NEUTRAL_PEAK_CHROMA,
 } from '../../common/constants';
@@ -33,13 +37,14 @@ type LightnessConfig = {
   [key: string]: { light: number; dark: number };
 };
 
-type colorConfig = {
+type ColourConfig = {
   [key: string]: {
     reference: React.MutableRefObject<LightnessConfig>;
     replaceName: boolean;
     isDynamic: boolean;
     peakChroma: number;
     peakChromaMult: number;
+    peakLightness: number;
     staticHue: number;
     hueShift: number;
   };
@@ -47,15 +52,10 @@ type colorConfig = {
 
 type ThemeContextType = {
   theme: 'light' | 'dark';
-  hues: { from: number; to: number };
+  hues: Hues;
   setTheme?: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
   toggleTheme?: () => void;
-  setHues?: React.Dispatch<
-    React.SetStateAction<{
-      from: number;
-      to: number;
-    }>
-  >;
+  setHues?: React.Dispatch<React.SetStateAction<Hues>>;
   syncHues?: () => void;
 };
 
@@ -190,13 +190,14 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const colorConfigRef = useRef<colorConfig>({
+  const colorConfigRef = useRef<ColourConfig>({
     primary: {
       reference: vividsConfigRef,
       replaceName: true,
       isDynamic: true,
-      peakChroma: 0.11,
+      peakChroma: THEME_PEAK_CHROMA,
       peakChromaMult: 1,
+      peakLightness: THEME_PEAK_LIGHTNESS,
       staticHue: 0,
       hueShift: 0,
     },
@@ -204,8 +205,9 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       reference: vividsConfigRef,
       replaceName: true,
       isDynamic: true,
-      peakChroma: 0.11,
+      peakChroma: THEME_PEAK_CHROMA,
       peakChromaMult: THEME_SECONDARY_CHROMA_MULT,
+      peakLightness: THEME_PEAK_LIGHTNESS,
       staticHue: 0,
       hueShift: 0,
     },
@@ -213,8 +215,9 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       reference: vividsConfigRef,
       replaceName: true,
       isDynamic: true,
-      peakChroma: 0.11,
+      peakChroma: THEME_PEAK_CHROMA,
       peakChromaMult: 1,
+      peakLightness: THEME_PEAK_LIGHTNESS,
       staticHue: 0,
       hueShift: 120,
     },
@@ -224,6 +227,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       isDynamic: true,
       peakChroma: THEME_NEUTRAL_PEAK_CHROMA,
       peakChromaMult: 1,
+      peakLightness: THEME_PEAK_LIGHTNESS,
       staticHue: 0,
       hueShift: 0,
     },
@@ -233,6 +237,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       isDynamic: true,
       peakChroma: THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
       peakChromaMult: 1,
+      peakLightness: THEME_PEAK_LIGHTNESS,
       staticHue: 0,
       hueShift: 0,
     },
@@ -240,24 +245,26 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       reference: vividsConfigRef,
       replaceName: true,
       isDynamic: false,
-      peakChroma: 0.11,
+      peakChroma: THEME_ERROR_PEAK_CHROMA,
       peakChromaMult: 1,
-      staticHue: 65,
+      peakLightness: THEME_ERROR_PEAK_LIGHTNESS,
+      staticHue: THEME_ERROR_HUE,
       hueShift: 0,
     },
     warning: {
       reference: vividsConfigRef,
       replaceName: true,
       isDynamic: false,
-      peakChroma: 0.11,
+      peakChroma: THEME_WARNING_PEAK_CHROMA,
       peakChromaMult: 1,
-      staticHue: 75,
+      peakLightness: THEME_WARNING_PEAK_LIGHTNESS,
+      staticHue: THEME_WARNING_HUE,
       hueShift: 0,
     },
   });
 
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [hues, setHues] = useState({ from: 0, to: 0 });
+  const [hues, setHues] = useState<Hues>({ from: 0, to: 0 });
 
   const toggleTheme = useCallback(() => {
     setTheme((prevTheme) => {
@@ -277,10 +284,11 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
         colorConfigRef.current
       )) {
         const reference = colorGroupConfig.reference;
-        const peakChromaMult = colorGroupConfig.peakChromaMult;
         const replaceName = colorGroupConfig.replaceName;
         const isDynamic = colorGroupConfig.isDynamic;
         const peakChroma = colorGroupConfig.peakChroma;
+        const peakChromaMult = colorGroupConfig.peakChromaMult;
+        const peakLightness = colorGroupConfig.peakLightness;
         const staticHue = colorGroupConfig.staticHue;
         const hueShift = colorGroupConfig.hueShift;
         Object.entries(reference.current).forEach(
@@ -288,7 +296,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
             let lightness = lightnessConfig[theme];
 
             let chroma =
-              chromaForLightness(lightness, THEME_PEAK_LIGHTNESS, peakChroma) *
+              chromaForLightness(lightness, peakLightness, peakChroma) *
               peakChromaMult;
             chroma = quantize(chroma, CHROMA_STEP);
 
