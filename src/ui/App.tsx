@@ -211,6 +211,7 @@ function App() {
     });
   }, []);
   const onChangeSwatchStepHandler = useCallback((newString: string) => {
+    console.log('app', newString);
     dispatch({
       type: 'setNumber',
       payload: { field: 'swatchStep', value: parseInt(newString) },
