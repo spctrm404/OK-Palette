@@ -7,8 +7,9 @@ import {
 } from '../common/constants';
 import { quantize } from '../common/numberUtils';
 
-const WIDTH = 286;
-const HEIGHT = 762; // 761.5
+const PX = 12;
+const WIDTH = 250;
+const HEIGHT = 900; // 742
 
 const PALETTE_PX = 48;
 const PALETTE_PY = 48;
@@ -34,8 +35,12 @@ const ensureFontLoaded = async () => {
   }
 };
 
-figma.showUI(__html__, { themeColors: true, width: WIDTH, height: HEIGHT });
-figma.ui.postMessage({ type: 'size', width: WIDTH, height: HEIGHT });
+figma.showUI(__html__, {
+  themeColors: true,
+  width: WIDTH + 2 * PX,
+  height: HEIGHT,
+});
+figma.ui.postMessage({ type: 'size', width: WIDTH, height: HEIGHT, px: PX });
 
 const colorSpace = figma.root.documentColorProfile;
 figma.ui.postMessage({ type: 'colorSpace', colorSpace: colorSpace });

@@ -218,8 +218,9 @@ function App() {
         setDocumentColorSpace(msg.colorSpace);
       } else if (type === 'size') {
         const root = document.documentElement;
-        root.style.setProperty('--body-width', `${msg.width / 16}rem`);
-        root.style.setProperty('--body-height', `${msg.height / 16}rem`);
+        root.style.setProperty('--width', `${msg.width}`);
+        root.style.setProperty('--height', `${msg.height}`);
+        root.style.setProperty('--px', `${msg.px}`);
       }
     };
     window.addEventListener('message', messageHandler);
@@ -250,11 +251,11 @@ function App() {
 
   return (
     <>
-      <div className={cx('section', 'doc-info')}>
-        <div className={cx('label', 'doc-info__label')}>
+      <div className={cx('section', 'doc-color')}>
+        <div className={cx('label', 'doc-color__label')}>
           Document's Color Space:
         </div>
-        <div className={cx('value', 'doc-info__value')}>
+        <div className={cx('value', 'doc-color__value')}>
           {documentColorSpace == 'DISPLAY_P3' && 'Display P3'}
           {documentColorSpace == 'SRGB' && 'sRGB'}
           {documentColorSpace == 'LEGACY' && 'Legacy'}
@@ -265,7 +266,7 @@ function App() {
         <div className={cx('section-label', 'h__section-label')}>Hue</div>
         <div className={cx('part', 'h__part', 'h__part--switch')}>
           <div className={cx('label', 'h__label')} id={hueRangedId}>
-            Ranged
+            Ranged:
           </div>
           <Switch
             aria-labelledby={hueRangedId}
@@ -308,7 +309,7 @@ function App() {
         >
           <div className={cx('number-field-group', 'h__number-field-group')}>
             <div className={cx('label', 'h__label')} id={hueFromId}>
-              From
+              From:
             </div>
             <NumberField
               aria-labelledby={hueFromId}
@@ -323,7 +324,7 @@ function App() {
           </div>
           <div className={cx('number-field-group', 'h__number-field-group')}>
             <div className={cx('label', 'h__label')} id={hueToId}>
-              To
+              To:
             </div>
             <NumberField
               aria-labelledby={hueToId}
@@ -348,6 +349,8 @@ function App() {
           <WebGl
             className={cx('l-c__gamut')}
             documentColorSpace={documentColorSpace}
+            peakLightness={state.peakLightness}
+            peakChroma={state.peakLightness}
             hues={{ from: state.hueFrom, to: state.hueTo }}
           />
           <XYSlider
@@ -374,7 +377,7 @@ function App() {
         >
           <div className={cx('number-field-group', 'l__number-field-group')}>
             <div className={cx('label', 'l__label')} id={lId}>
-              Lightness
+              Lightness:
             </div>
             <NumberField
               aria-labelledby={lId}
@@ -389,7 +392,7 @@ function App() {
           </div>
           <div className={cx('number-field-group', 'l__number-field-group')}>
             <div className={cx('label', 'l__label')} id={cId}>
-              Chroma
+              Chroma:
             </div>
             <NumberField
               aria-labelledby={cId}
@@ -402,6 +405,48 @@ function App() {
               noButton={true}
             />
           </div>
+        </div>
+      </div>
+      <div className={cx('divider')}></div>
+      <div className={cx('section', 'input')}>
+        <div
+          className={cx('section-label', 'input__section-label')}
+          // id={stepId}
+        >
+          RGB to okLCh
+        </div>
+        <div className={cx('part', 'input__part')}>
+          <div className={cx('input__swatch')}></div>
+          <NumberField
+            // aria-labelledby={cId}
+            className={cx('input__number-field', 'input__number-field--r')}
+            value={0}
+            minValue={0}
+            maxValue={255}
+            step={1}
+            onChange={() => {}}
+            noButton={true}
+          />
+          <NumberField
+            // aria-labelledby={cId}
+            className={cx('input__number-field', 'input__number-field--g')}
+            value={0}
+            minValue={0}
+            maxValue={255}
+            step={1}
+            onChange={() => {}}
+            noButton={true}
+          />
+          <NumberField
+            // aria-labelledby={cId}
+            className={cx('input__number-field', 'input__number-field--b')}
+            value={0}
+            minValue={0}
+            maxValue={255}
+            step={1}
+            onChange={() => {}}
+            noButton={true}
+          />
         </div>
       </div>
       <div className={cx('divider')}></div>

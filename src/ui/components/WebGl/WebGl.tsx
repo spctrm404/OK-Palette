@@ -9,12 +9,16 @@ const cx = classNames.bind(st);
 
 type WebGlProps = {
   documentColorSpace: DocumentColorSpace;
+  peakLightness: number;
+  peakChroma: number;
   hues: Hues;
   className?: string;
 };
 
 const WebGl = ({
   documentColorSpace,
+  peakLightness,
+  peakChroma,
   hues,
   className = '',
   ...props

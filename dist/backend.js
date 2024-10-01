@@ -3,12 +3,16 @@ const s = (_, t) => {
   let T = Math.round(_ / t) * t;
   return T = parseFloat(T.toFixed(a)), T;
 };
-let P = !1;
+let E = !1;
 const h = async () => {
-  P || (await figma.loadFontAsync({ family: "Roboto Mono", style: "Medium" }), await figma.loadFontAsync({ family: "Roboto Condensed", style: "Bold" }), P = !0);
+  E || (await figma.loadFontAsync({ family: "Roboto Mono", style: "Medium" }), await figma.loadFontAsync({ family: "Roboto Condensed", style: "Bold" }), E = !0);
 };
-figma.showUI(__html__, { themeColors: !0, width: 286, height: 762 });
-figma.ui.postMessage({ type: "size", width: 286, height: 762 });
+figma.showUI(__html__, {
+  themeColors: !0,
+  width: 250 + 2 * 12,
+  height: 900
+});
+figma.ui.postMessage({ type: "size", width: 250, height: 900, px: 12 });
 const c = figma.root.documentColorProfile;
 figma.ui.postMessage({ type: "colorSpace", colorSpace: c });
 figma.ui.onmessage = async (_) => {
@@ -61,24 +65,24 @@ figma.ui.onmessage = async (_) => {
           color: r < t.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
         }
       ];
-      const p = figma.createText();
-      o.appendChild(p);
+      const g = figma.createText();
+      o.appendChild(g);
       let l;
       c === "DISPLAY_P3" && (l = figma.createText(), o.appendChild(l));
       const I = figma.createText();
       o.appendChild(I);
-      const d = figma.createText();
-      o.appendChild(d), o.children.forEach((E) => {
-        if (E.type === "TEXT") {
-          const g = E;
-          g.fontName = { family: "Roboto Mono", style: "Medium" }, g.fontSize = 12, g.lineHeight = { value: 16, unit: "PIXELS" }, g.fills = [
+      const P = figma.createText();
+      o.appendChild(P), o.children.forEach((d) => {
+        if (d.type === "TEXT") {
+          const p = d;
+          p.fontName = { family: "Roboto Mono", style: "Medium" }, p.fontSize = 12, p.lineHeight = { value: 16, unit: "PIXELS" }, p.fills = [
             {
               type: "SOLID",
               color: r < t.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
             }
           ];
         }
-      }), p.name = "oklch", p.characters = c === "DISPLAY_P3" ? `oklch(${s(
+      }), g.name = "oklch", g.characters = c === "DISPLAY_P3" ? `oklch(${s(
         e.dispP3ClampedOklch.l,
         0.01
       )} ${s(
@@ -94,7 +98,7 @@ figma.ui.onmessage = async (_) => {
   ${s(e.dispP3.r, 1e-6)}
   ${s(e.dispP3.g, 1e-6)}
   ${s(e.dispP3.b, 1e-6)}
-)`), I.name = "hex", I.characters = `#${c === "DISPLAY_P3" ? e.dispP3Hex : e.sRgbHex}`, d.name = "gamut", d.characters = e.gamut;
+)`), I.name = "hex", I.characters = `#${c === "DISPLAY_P3" ? e.dispP3Hex : e.sRgbHex}`, P.name = "gamut", P.characters = e.gamut;
     }), figma.currentPage.appendChild(a);
   }
 };
