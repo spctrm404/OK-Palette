@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import glsl from 'vite-plugin-glsl';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import plainText from 'vite-plugin-virtual-plain-text';
 import fs from 'fs'; // Node.js 파일 시스템 모듈
@@ -8,6 +9,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [
     react(),
+    glsl(),
     // plainText({ virtualNamespace: '@virtual:shaders/', dtsAutoGen: 'virtual-shaders-declaration' }),
     // {
     //   name: 'watch-external', // https://stackoverflow.com/questions/63373804/rollup-watch-include-directory/63548394#63548394
