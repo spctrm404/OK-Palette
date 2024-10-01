@@ -423,12 +423,12 @@ function App() {
       <div className={cx('divider')}></div>
       <div className={cx('section', 'button')}>
         <div className={cx('part', 'button__part')}>
-          <IconButton
+          {/* <IconButton
             className={cx('button__option')}
             buttontype="tonal"
             materialIcon="settings"
             onPress={() => {}}
-          />
+          /> */}
           <Button
             className={cx('button__create')}
             buttontype="filled"

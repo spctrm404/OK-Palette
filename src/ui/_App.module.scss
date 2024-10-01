@@ -577,4 +577,9 @@ body {
     column-gap: 0.25rem;
     place-items: center stretch;
   }
+
+  &__create {
+    grid-row: 1;
+    grid-column: 1 / -1;
+  }
 }

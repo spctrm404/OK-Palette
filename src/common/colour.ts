@@ -147,34 +147,41 @@ export const createPalette = (
     } as const;
     if (lightness === 0) {
       swatches.push({
-        oklch,
-        sRgbHex: '000000',
+        dispP3ClampedOklch: oklch,
         dispP3: { r: 0, g: 0, b: 0 },
         dispP3Hex: '000000',
+        sRgbClampedOklch: oklch,
+        sRgb: { r: 0, g: 0, b: 0 },
+        sRgbHex: '000000',
         gamut: 'sRGB',
       });
     } else if (lightness === 1) {
       swatches.push({
-        oklch,
-        sRgbHex: 'FFFFFF',
+        dispP3ClampedOklch: oklch,
         dispP3: { r: 1, g: 1, b: 1 },
         dispP3Hex: 'FFFFFF',
+        sRgbClampedOklch: oklch,
+        sRgb: { r: 1, g: 1, b: 1 },
+        sRgbHex: 'FFFFFF',
         gamut: 'sRGB',
       });
     } else {
       const isDispP3 = inDispP3(oklch);
       const isSRgb = inSRgb(oklch);
       const dispP3ClampedOklch = clampChroma(oklch, 'oklch', 'p3');
-      const sRgbClampedOklch = clampChroma(oklch, 'oklch', 'rgb');
       const dispP3 = toDispP3(dispP3ClampedOklch);
       const dispP3Hex = nomalRgbToHex(dispP3);
-      const sRgbHex = nomalRgbToHex(toSRgb(sRgbClampedOklch));
+      const sRgbClampedOklch = clampChroma(oklch, 'oklch', 'rgb');
+      const sRgb = toSRgb(sRgbClampedOklch);
+      const sRgbHex = nomalRgbToHex(sRgb);
       swatches.push({
-        oklch,
-        sRgbHex,
+        dispP3ClampedOklch,
         dispP3,
         dispP3Hex,
-        gamut: isSRgb ? 'sRGB' : isDispP3 ? 'Display P3' : 'Out of Display P3',
+        sRgbClampedOklch,
+        sRgb,
+        sRgbHex,
+        gamut: isSRgb ? 'sRGB' : 'Display P3',
       });
     }
   }

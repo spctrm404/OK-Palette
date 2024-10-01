@@ -22,14 +22,14 @@ const INFO_GY = 4;
 const INFO_FONTSIZE = 12;
 const INFO_LINEHEIGHT = 16;
 const IDX_FONTSIZE = 56;
-const IDX_OFFSET_X = 16;
-const IDX_OFFSET_Y = 16;
+const IDX_OFFSET_X = 12;
+const IDX_OFFSET_Y = 20;
 
 let isFontLoaded = false;
 const ensureFontLoaded = async () => {
   if (!isFontLoaded) {
-    await figma.loadFontAsync({ family: 'Martian Mono', style: 'Regular' });
-    await figma.loadFontAsync({ family: 'Martian Mono', style: 'Bold' });
+    await figma.loadFontAsync({ family: 'Roboto Mono', style: 'Medium' });
+    await figma.loadFontAsync({ family: 'Roboto Condensed', style: 'Bold' });
     isFontLoaded = true;
   }
 };
@@ -81,16 +81,28 @@ figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
       swatchFrame.x = PALETTE_PX + idx * (SWATCH_W + PALETTE_GX);
       swatchFrame.y = PALETTE_PY;
       swatchFrame.resize(SWATCH_W, SWATCH_H);
-      swatchFrame.fills = [
-        {
-          type: 'SOLID',
-          color: {
-            r: aSwatch.dispP3.r,
-            g: aSwatch.dispP3.g,
-            b: aSwatch.dispP3.b,
-          },
-        },
-      ];
+      swatchFrame.fills =
+        colorSpace === 'DISPLAY_P3'
+          ? [
+              {
+                type: 'SOLID',
+                color: {
+                  r: aSwatch.dispP3.r,
+                  g: aSwatch.dispP3.g,
+                  b: aSwatch.dispP3.b,
+                },
+              },
+            ]
+          : [
+              {
+                type: 'SOLID',
+                color: {
+                  r: aSwatch.sRgb.r,
+                  g: aSwatch.sRgb.g,
+                  b: aSwatch.sRgb.b,
+                },
+              },
+            ];
 
       const infoFrame = figma.createFrame();
       swatchFrame.appendChild(infoFrame);
@@ -108,7 +120,7 @@ figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
       const lightnessText = figma.createText();
       swatchFrame.appendChild(lightnessText);
       lightnessText.name = '#';
-      lightnessText.fontName = { family: 'Martian Mono', style: 'Bold' };
+      lightnessText.fontName = { family: 'Roboto Condensed', style: 'Bold' };
       lightnessText.fontSize = IDX_FONTSIZE;
       lightnessText.lineHeight = { value: IDX_FONTSIZE, unit: 'PIXELS' };
       lightnessText.characters = `${idx * palette.swatchStep}`;
@@ -127,19 +139,20 @@ figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
 
       const okLChText = figma.createText();
       infoFrame.appendChild(okLChText);
-      const p3RGBText = figma.createText();
-      infoFrame.appendChild(p3RGBText);
-      const sRGBHexText = figma.createText();
-      infoFrame.appendChild(sRGBHexText);
-      const p3HexText = figma.createText();
-      infoFrame.appendChild(p3HexText);
+      let p3RGBText;
+      if (colorSpace === 'DISPLAY_P3') {
+        p3RGBText = figma.createText();
+        infoFrame.appendChild(p3RGBText);
+      }
+      const hexText = figma.createText();
+      infoFrame.appendChild(hexText);
       const gamutText = figma.createText();
       infoFrame.appendChild(gamutText);
 
       infoFrame.children.forEach((child) => {
         if (child.type === 'TEXT') {
           const textNode = child as TextNode;
-          textNode.fontName = { family: 'Martian Mono', style: 'Regular' };
+          textNode.fontName = { family: 'Roboto Mono', style: 'Medium' };
           textNode.fontSize = INFO_FONTSIZE;
           textNode.lineHeight = { value: INFO_LINEHEIGHT, unit: 'PIXELS' };
           textNode.fills = [
@@ -155,21 +168,37 @@ figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
       });
 
       okLChText.name = 'oklch';
-      okLChText.characters = `oklch(${aSwatch.oklch.l} ${aSwatch.oklch.c} ${aSwatch.oklch.h})`;
+      okLChText.characters =
+        colorSpace === 'DISPLAY_P3'
+          ? `oklch(${quantize(
+              aSwatch.dispP3ClampedOklch.l,
+              LIGHTNESS_STEP
+            )} ${quantize(
+              aSwatch.dispP3ClampedOklch.c,
+              CHROMA_STEP
+            )} ${quantize(aSwatch.dispP3ClampedOklch.h, HUE_STEP)})`
+          : `oklch(${quantize(
+              aSwatch.sRgbClampedOklch.l,
+              LIGHTNESS_STEP
+            )} ${quantize(aSwatch.sRgbClampedOklch.c, CHROMA_STEP)} ${quantize(
+              aSwatch.sRgbClampedOklch.h,
+              HUE_STEP
+            )})`;
 
-      p3RGBText.name = 'displayP3-rgb';
-      p3RGBText.fontName = { family: 'Martian Mono', style: 'Regular' };
-      p3RGBText.characters = `color(display-p3
+      if (colorSpace === 'DISPLAY_P3' && p3RGBText) {
+        p3RGBText.name = 'displayP3-rgb';
+        p3RGBText.fontName = { family: 'Roboto Mono', style: 'Medium' };
+        p3RGBText.characters = `color(display-p3
   ${quantize(aSwatch.dispP3.r, RGB_FLOAT_PRECISION)}
   ${quantize(aSwatch.dispP3.g, RGB_FLOAT_PRECISION)}
   ${quantize(aSwatch.dispP3.b, RGB_FLOAT_PRECISION)}
 )`;
+      }
 
-      sRGBHexText.name = 'sRGB-hex';
-      sRGBHexText.characters = `sRGB: #${aSwatch.sRgbHex}`;
-
-      p3HexText.name = 'displayP3-hex';
-      p3HexText.characters = `P3:   #${aSwatch.dispP3Hex}`;
+      hexText.name = 'hex';
+      hexText.characters = `#${
+        colorSpace === 'DISPLAY_P3' ? aSwatch.dispP3Hex : aSwatch.sRgbHex
+      }`;
 
       gamutText.name = 'gamut';
       gamutText.characters = aSwatch.gamut;

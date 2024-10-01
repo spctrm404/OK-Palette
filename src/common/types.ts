@@ -11,10 +11,12 @@ export type Hues = {
 };
 
 export type Swatch = {
-  oklch: { l: number; c: number; h: number };
-  sRgbHex: string;
+  dispP3ClampedOklch: { l: number; c: number; h: number };
   dispP3: { r: number; g: number; b: number };
   dispP3Hex: string;
+  sRgbClampedOklch: { l: number; c: number; h: number };
+  sRgb: { r: number; g: number; b: number };
+  sRgbHex: string;
   gamut: 'sRGB' | 'Display P3' | 'Out of Display P3';
 };
 

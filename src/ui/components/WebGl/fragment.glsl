@@ -15,6 +15,7 @@ const float PI = 3.1415926535897932384626433832795;
 const float DEG2RAD = PI / 180.0;
 const int COLOR_SPACE_SRGB = 0;
 const int COLOR_SPACE_DISPLAY_P3 = 1;
+const float DELTA_CHROMA = 0.002; // Chroma 증가 값
 
 // 색 공간 내 여부 확인 함수
 bool isInGamut(vec3 v) {
@@ -22,7 +23,7 @@ bool isInGamut(vec3 v) {
 }
 
 // 행렬의 전치와 벡터의 곱셈 함수
-vec3 mulMat3TVec3(mat3 m, vec3 v) {
+vec3 mulTransposedMat3Vec3(mat3 m, vec3 v) {
   return vec3(
     dot(v, m[0]),
     dot(v, m[1]),
@@ -47,7 +48,7 @@ vec3 oklabToLrgbSrgb(vec3 lab) {
     1.0000000546724108, -0.08948418209496575, -1.2914855378640917
   );
 
-  vec3 lmsNonLinear = mulMat3TVec3(labToLms, lab);
+  vec3 lmsNonLinear = mulTransposedMat3Vec3(labToLms, lab);
   vec3 lms = pow(abs(lmsNonLinear), vec3(3.0)) * sign(lmsNonLinear);
 
   mat3 lmsToLrgb = mat3(
@@ -56,7 +57,7 @@ vec3 oklabToLrgbSrgb(vec3 lab) {
    -0.004196086541837188, -0.7034186144594493,  1.7076147009309444
   );
 
-  return mulMat3TVec3(lmsToLrgb, lms);
+  return mulTransposedMat3Vec3(lmsToLrgb, lms);
 }
 
 // OKLab을 Display P3 Linear로 직접 변환
@@ -67,7 +68,7 @@ vec3 oklabToLrgbDisplayP3(vec3 lab) {
     1.0000000546724108, -0.08948418209496575, -1.2914855378640917
   );
 
-  vec3 lmsNonLinear = mulMat3TVec3(labToLms, lab);
+  vec3 lmsNonLinear = mulTransposedMat3Vec3(labToLms, lab);
   vec3 lms = pow(abs(lmsNonLinear), vec3(3.0)) * sign(lmsNonLinear);
 
   // LMS에서 XYZ로 변환
@@ -77,7 +78,7 @@ vec3 oklabToLrgbDisplayP3(vec3 lab) {
    -0.0763812845057069, -0.4214819784180127,  1.5861632204407947
   );
 
-  vec3 xyz = mulMat3TVec3(lmsToXyz, lms);
+  vec3 xyz = mulTransposedMat3Vec3(lmsToXyz, lms);
 
   // XYZ에서 Display P3 Linear로 변환
   mat3 xyzToDisplayP3 = mat3(
@@ -86,7 +87,7 @@ vec3 oklabToLrgbDisplayP3(vec3 lab) {
     0.0358458302437845, -0.0761723892680418,  0.9568845240076872
   );
 
-  return mulMat3TVec3(xyzToDisplayP3, xyz);
+  return mulTransposedMat3Vec3(xyzToDisplayP3, xyz);
 }
 
 // Linear RGB를 Gamma 보정 RGB로 변환
@@ -101,19 +102,20 @@ vec3 lrgbToRgb(vec3 rgb) {
   return mix(belowThreshold, aboveThreshold, step(threshold, absRgb));
 }
 
-// OKLCH를 RGB로 변환
-vec3 oklchToRgb(vec3 lch, int colorSpace) {
-  vec3 lab = lchToLab(lch);
-  vec3 lrgbInSpace;
+// OKLab 색상이 sRGB 색 공간의 경계에 있는지 확인하는 함수
+bool isAtSrgbBoundary(vec3 oklch, vec3 lab) {
+  // 현재 색상이 sRGB 색 공간 내에 있는지 확인
+  vec3 lrgbSrgb = oklabToLrgbSrgb(lab);
+  bool inSrgbGamut = isInGamut(lrgbSrgb);
 
-  if (colorSpace == COLOR_SPACE_SRGB) {
-    lrgbInSpace = oklabToLrgbSrgb(lab);
-  } else if (colorSpace == COLOR_SPACE_DISPLAY_P3) {
-    lrgbInSpace = oklabToLrgbDisplayP3(lab);
-  }
+  // chroma를 약간 증가시켜서 sRGB 색 공간 밖으로 나가는지 확인
+  vec3 oklchIncreasedC = vec3(oklch.x, oklch.y + DELTA_CHROMA, oklch.z);
+  vec3 labIncreasedC = lchToLab(oklchIncreasedC);
+  vec3 lrgbIncreasedC = oklabToLrgbSrgb(labIncreasedC);
+  bool inSrgbGamutIncreasedC = isInGamut(lrgbIncreasedC);
 
-  vec3 rgbInSpace = lrgbToRgb(lrgbInSpace);
-  return rgbInSpace;
+  // 현재는 sRGB 안에 있고, 증가된 chroma는 sRGB 밖에 있으면 경계로 판단
+  return inSrgbGamut && !inSrgbGamutIncreasedC;
 }
 
 void main() {
@@ -143,13 +145,35 @@ void main() {
   // OKLCH 색상 생성
   vec3 oklch = vec3(l, c, h_rad);
 
-  // RGB 변환
-  vec3 oklchRgb = oklchToRgb(oklch, u_ColorSpace);
+  // OKLab으로 변환
+  vec3 lab = lchToLab(oklch);
 
-  // 색공간 내 여부 확인 및 색상 출력
-  if (isInGamut(oklchRgb)) {
-    outColor = vec4(oklchRgb, 1.0);
-  } else {
-    outColor = vec4(0.0, 0.0, 0.0, 0.0);
+  if (u_ColorSpace == COLOR_SPACE_SRGB) {
+    // sRGB 색 공간 처리
+    vec3 lrgb = oklabToLrgbSrgb(lab);
+    vec3 rgb = lrgbToRgb(lrgb);
+    bool inGamut = isInGamut(lrgb);
+
+    if (inGamut) {
+      outColor = vec4(rgb, 1.0);
+    } else {
+      outColor = vec4(0.0, 0.0, 0.0, 0.0);
+    }
+  } else if (u_ColorSpace == COLOR_SPACE_DISPLAY_P3) {
+    // Display P3 색 공간 처리
+    vec3 lrgbP3 = oklabToLrgbDisplayP3(lab);
+    vec3 rgb = lrgbToRgb(lrgbP3);
+    bool inGamut = isInGamut(lrgbP3);
+
+    if (inGamut) {
+      // sRGB 색 공간의 경계인지 확인
+      bool atSrgbBoundary = isAtSrgbBoundary(oklch, lab);
+
+      // 경계일 경우 투명하게, 그 외에는 불투명하게
+      float alpha = atSrgbBoundary ? 0.0 : 1.0;
+      outColor = vec4(rgb, alpha);
+    } else {
+      outColor = vec4(0.0, 0.0, 0.0, 0.0);
+    }
   }
 }
