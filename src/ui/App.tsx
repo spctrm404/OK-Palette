@@ -1,3 +1,4 @@
+import { DocumentColorSpace, XY } from '../common/types';
 import {
   useCallback,
   useContext,
@@ -23,17 +24,13 @@ import Radio from './components/Radio/Radio';
 import Slider from './components/Slider/Slider';
 import Switch from './components/Switch/Switch';
 import ToggleButton from './components/ToggleButton/ToggleButton';
+import WebGl from './components/WebGl/WebGl';
 import XYSlider from './components/XYSlider/XYSlider';
 import st from './_App.module.scss';
 import classNames from 'classnames/bind';
 import { quantize } from '../common/numberUtils';
 
 const cx = classNames.bind(st);
-
-type PlaneCoord = {
-  x: number;
-  y: number;
-};
 
 type PaletteParam = {
   swatchStep: number;
@@ -137,9 +134,8 @@ function App() {
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [documentColorSpace, setDocumentColorSpace] = useState<
-    'LEGACY' | 'SRGB' | 'DISPLAY_P3'
-  >('LEGACY');
+  const [documentColorSpace, setDocumentColorSpace] =
+    useState<DocumentColorSpace>('LEGACY');
 
   const sendMsg = () => {
     console.log('lightnessStep', state.swatchStep);
@@ -168,18 +164,15 @@ function App() {
     );
   };
 
-  const onChangeLightnessAndChromaHandler = useCallback(
-    ({ x, y }: PlaneCoord) => {
-      dispatch({
-        type: 'setNumbers',
-        payload: [
-          { field: 'peakLightness', value: x },
-          { field: 'peakChroma', value: y },
-        ],
-      });
-    },
-    []
-  );
+  const onChangeLightnessAndChromaHandler = useCallback(({ x, y }: XY) => {
+    dispatch({
+      type: 'setNumbers',
+      payload: [
+        { field: 'peakLightness', value: x },
+        { field: 'peakChroma', value: y },
+      ],
+    });
+  }, []);
   const onChangeLightnessHandler = useCallback((newNumber: number) => {
     dispatch({
       type: 'setNumber',
@@ -352,6 +345,11 @@ function App() {
           Lightness & Chroma
         </div>
         <div className={cx('part', 'l-c__part', 'l-c__part--xy-slider')}>
+          <WebGl
+            className={cx('l-c__gamut')}
+            documentColorSpace={documentColorSpace}
+            hues={{ from: state.hueFrom, to: state.hueTo }}
+          />
           <XYSlider
             aria-labelledby={lcId}
             className={cx('l-c__xy-slider')}

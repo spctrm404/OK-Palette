@@ -1,3 +1,10 @@
+export type DocumentColorSpace = 'LEGACY' | 'SRGB' | 'DISPLAY_P3';
+
+export type XY = {
+  x: number;
+  y: number;
+};
+
 export type Hues = {
   from: number;
   to: number;
