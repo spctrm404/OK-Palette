@@ -8,7 +8,8 @@
     "build-backend": "vite build --config vite-backend.config.ts",
     "build-ui": "vite build --config vite-ui.config.ts",
     "dev-backend": "vite build --config vite-backend.config.ts --watch",
-    "dev-ui": "vite build --config vite-ui.config.ts --watch"
+    "dev-ui": "vite build --config vite-ui.config.ts --watch",
+    "gen-license": "npx generate-license-file --input package.json --output THIRD_PARTY_LICENSES.txt"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
     "eslint": "^8.54.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
+    "generate-license-file": "^3.5.1",
     "globals": "^15.9.0",
     "sass": "^1.79.3",
     "stylelint-config-prettier-scss": "^1.0.0",
