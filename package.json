@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/spctrm404/okpalette#readme",
   "dependencies": {
+    "apca-w3": "^0.1.9",
     "classnames": "^2.5.1",
     "culori": "^4.0.1",
     "react": "^18.3.1",

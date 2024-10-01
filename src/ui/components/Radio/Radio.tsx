@@ -25,8 +25,6 @@ const Radio = ({
   className,
   ...props
 }: RadioProps) => {
-  const { theme } = useContext(ThemeContext);
-
   const onChangeHandler = useCallback(
     (newString: string) => {
       console.log('component', newString);
@@ -40,22 +38,26 @@ const Radio = ({
       value={value}
       onChange={onChangeHandler}
       className={cx('radio-group', 'radio-group__root', className)}
-      data-theme={theme}
       {...props}
     >
       {radioItems.map((aRadioItem) => {
         return (
           <AriaRadio
-            className={cx('radio')}
+            className={`${cx('radio')} radio`}
             key={aRadioItem.uid}
             value={aRadioItem.value}
-            data-theme={theme}
           >
-            <div className={cx('radio__button')}>
-              <div className={cx('radio__button__state')} />
-              <div className={cx('radio__button__shape')} />
+            <div className={cx('radio__button', 'radio-button')}>
+              <div
+                className={cx('radio__button__state', 'radio-button-state')}
+              />
+              <div
+                className={cx('radio__button__shape', 'radio-button-shape')}
+              />
             </div>
-            <div className={cx('radio__text')}>{aRadioItem.text}</div>
+            <div className={cx('radio__text', 'radio-text')}>
+              {aRadioItem.text}
+            </div>
           </AriaRadio>
         );
       })}

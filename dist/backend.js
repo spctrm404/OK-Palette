@@ -7,8 +7,8 @@ let d = !1;
 const f = async () => {
   d || (await figma.loadFontAsync({ family: "Martian Mono", style: "Regular" }), await figma.loadFontAsync({ family: "Martian Mono", style: "Bold" }), d = !0);
 };
-figma.showUI(__html__, { themeColors: !0, width: 236, height: 600 });
-figma.ui.postMessage({ type: "size", width: 236, height: 600 });
+figma.showUI(__html__, { themeColors: !0, width: 286, height: 762 });
+figma.ui.postMessage({ type: "size", width: 286, height: 762 });
 const F = figma.root.documentColorProfile;
 figma.ui.postMessage({ type: "colorSpace", colorSpace: F });
 figma.ui.onmessage = async (r) => {

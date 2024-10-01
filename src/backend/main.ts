@@ -7,8 +7,8 @@ import {
 } from '../common/constants';
 import { quantize } from '../common/numberUtils';
 
-const WIDTH = 236;
-const HEIGHT = 600;
+const WIDTH = 286;
+const HEIGHT = 762; // 761.5
 
 const PALETTE_PX = 48;
 const PALETTE_PY = 48;

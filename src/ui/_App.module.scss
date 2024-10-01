@@ -3,10 +3,10 @@
 @use './styles/typography' as t;
 
 :global :root {
-  --body-width: 14.75rem;
+  --body-width: 17.875rem;
 }
 
-$width: 12.5rem;
+$width: 15.625rem;
 $section-px: calc((var(--body-width) - $width) / 2);
 
 body {
@@ -113,6 +113,7 @@ body {
     @at-root .h__part--switch #{&} {
       grid-row: 1;
       grid-column: 1;
+      margin-top: 0.125rem;
     }
   }
 
@@ -525,7 +526,7 @@ body {
       grid-template-rows: 1fr;
       grid-template-columns: 1fr;
       place-items: stretch stretch;
-      aspect-ratio: 224 / 184;
+      aspect-ratio: 274 / 224;
       padding-inline: 0;
       margin-inline: 0.375rem;
     }
@@ -544,8 +545,26 @@ body {
   }
 }
 
-.create {
-  &__btn {
-    width: 100%;
+.step {
+  &__part {
+    padding-left: 0.6563rem;
+  }
+
+  &__radio {
+    justify-content: space-between;
+    margin-top: 0.0938rem;
+
+    :global .radio-text {
+      margin-top: 0.125rem;
+    }
+  }
+}
+
+.button {
+  &__part {
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    column-gap: 0.25rem;
+    place-items: center stretch;
   }
 }

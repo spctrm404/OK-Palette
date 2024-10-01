@@ -211,7 +211,6 @@ function App() {
     });
   }, []);
   const onChangeSwatchStepHandler = useCallback((newString: string) => {
-    console.log('app', newString);
     dispatch({
       type: 'setNumber',
       payload: { field: 'swatchStep', value: parseInt(newString) },
@@ -424,10 +423,16 @@ function App() {
         </div>
       </div>
       <div className={cx('divider')}></div>
-      <div className={cx('section', 'create')}>
-        <div className={cx('part', 'create__part')}>
+      <div className={cx('section', 'button')}>
+        <div className={cx('part', 'button__part')}>
+          <IconButton
+            className={cx('button__option')}
+            buttontype="tonal"
+            materialIcon="settings"
+            onPress={() => {}}
+          />
           <Button
-            className={cx('create__btn')}
+            className={cx('button__create')}
             buttontype="filled"
             text="Create"
             onPress={sendMsg}
