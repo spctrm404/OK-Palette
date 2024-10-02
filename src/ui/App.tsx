@@ -15,7 +15,7 @@ import {
   HUE_STEP,
   DISP_P3_CHROMA_LIMIT,
 } from '../common/constants';
-import { createPalette } from '../common/colour';
+import { createApcaMatrix, createPalette } from '../common/colour';
 import { ThemeContext } from './contexts/ThemeContext';
 import Button from './components/Button/Button';
 import IconButton from './components/IconButton/IconButton';
@@ -152,12 +152,21 @@ function App() {
         to: state.hueTo,
       }
     );
-    console.log(palette);
+    const apcaMatrix = createApcaMatrix(palette, documentColorSpace);
+    // parent.postMessage(
+    //   {
+    //     pluginMessage: {
+    //       type: 'create-palette',
+    //       palette,
+    //     },
+    //   },
+    //   '*'
+    // );
     parent.postMessage(
       {
         pluginMessage: {
-          type: 'create-palette',
-          palette: palette,
+          type: 'create-matrix',
+          apcaMatrix,
         },
       },
       '*'

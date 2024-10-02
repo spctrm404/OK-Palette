@@ -1,4 +1,4 @@
-import { Hues, Swatch, Palette } from './types';
+import { Hues, Swatch, Palette, DocumentColorSpace, ApcaMatrix } from './types';
 import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
@@ -7,6 +7,7 @@ import {
 } from './constants';
 import { inGamut, converter, clampChroma } from 'culori';
 import { quantize } from './numberUtils';
+import { APCAcontrast, displayP3toY, sRGBtoY } from 'apca-w3';
 
 export const nomalRgbToHex = ({
   r,
@@ -1996,3 +1997,47 @@ export const LightnessAndChromaPeaksOfHues = [
     chroma: 0.305,
   },
 ];
+
+export const calculateApcaScore = (
+  { r: fgR, g: fgG, b: fgB }: { r: number; g: number; b: number },
+  { r: bgR, g: bgG, b: bgB }: { r: number; g: number; b: number },
+  colorSpace: DocumentColorSpace
+): number => {
+  if (colorSpace === 'DISPLAY_P3') {
+    const fgY = displayP3toY([fgR, fgG, fgB]);
+    const bgY = displayP3toY([bgR, bgG, bgB]);
+    const contrast = APCAcontrast(fgY, bgY);
+
+    return Math.round(Number(contrast));
+  } else {
+    return Math.round(
+      Number(APCAcontrast(sRGBtoY([fgR, fgG, fgB]), sRGBtoY([bgR, bgG, bgB])))
+    );
+  }
+};
+
+export const createApcaMatrix = (
+  palette: Palette,
+  colorspace: DocumentColorSpace
+): ApcaMatrix => {
+  const matrix: number[][] = [];
+  const swatches = palette.swatches;
+  swatches.forEach((bg, idx) => {
+    const column: number[] = [];
+    swatches.forEach((fg, idx) => {
+      column.push(
+        calculateApcaScore(
+          colorspace == 'DISPLAY_P3' ? bg.dispP3 : bg.sRgb,
+          colorspace == 'DISPLAY_P3' ? fg.dispP3 : fg.sRgb,
+          colorspace
+        )
+      );
+    });
+    matrix.push(column);
+  });
+  const out = {
+    palette,
+    matrix,
+  };
+  return out;
+};

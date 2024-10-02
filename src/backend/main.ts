@@ -1,4 +1,4 @@
-import { Swatch, Palette } from '../common/types';
+import { Swatch, Palette, ApcaMatrix } from '../common/types';
 import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
@@ -45,8 +45,18 @@ figma.ui.postMessage({ type: 'size', width: WIDTH, height: HEIGHT, px: PX });
 const colorSpace = figma.root.documentColorProfile;
 figma.ui.postMessage({ type: 'colorSpace', colorSpace: colorSpace });
 
-figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
-  if (msg.type === 'create-palette') {
+type MsgType =
+  | {
+      type: string;
+      palette: Palette;
+    }
+  | {
+      type: string;
+      apcaMatrix: ApcaMatrix;
+    };
+
+figma.ui.onmessage = async (msg: MsgType) => {
+  if (msg.type === 'create-palette' && 'palette' in msg) {
     await ensureFontLoaded();
 
     const palette = msg.palette;
@@ -207,6 +217,112 @@ figma.ui.onmessage = async (msg: { type: string; palette: Palette }) => {
 
       gamutText.name = 'gamut';
       gamutText.characters = aSwatch.gamut;
+    });
+
+    figma.currentPage.appendChild(paletteFrame);
+    nodes.push(paletteFrame);
+  } else if (msg.type === 'create-matrix' && 'apcaMatrix' in msg) {
+    console.log('MATRIX');
+    await ensureFontLoaded();
+    const apcaMatrix = msg.apcaMatrix;
+    const palette = apcaMatrix.palette;
+    const matrix = apcaMatrix.matrix;
+
+    const nodes: SceneNode[] = [];
+    const paletteFrame = figma.createFrame();
+    paletteFrame.name = `OKP-matrix-step${palette.swatchStep}_l${quantize(
+      100 * palette.peakLightness,
+      1
+    )}_c${quantize(100 * palette.peakChroma, 0.1)}_h${quantize(
+      palette.hues.from,
+      1
+    )}-${quantize(palette.hues.to, 1)}`;
+    const { x: centerX, y: centerY } = figma.viewport.center;
+    paletteFrame.x = centerX + SWATCH_H + 2 * PALETTE_PY;
+    paletteFrame.y = centerY;
+    paletteFrame.resize(
+      2 * PALETTE_PX +
+        (100 / palette.swatchStep + 1) * SWATCH_W +
+        (100 / palette.swatchStep) * PALETTE_GX,
+      2 * PALETTE_PY +
+        +(100 / palette.swatchStep + 1) * SWATCH_H +
+        (100 / palette.swatchStep) * PALETTE_GY
+    );
+    paletteFrame.fills = [
+      {
+        type: 'SOLID',
+        color: { r: 1, g: 1, b: 1 },
+      },
+    ];
+
+    matrix.forEach((bg, bgIdx) => {
+      bg.forEach((fg, fgIdx) => {
+        const swatchFrame = figma.createFrame();
+        paletteFrame.appendChild(swatchFrame);
+        swatchFrame.name = `bg-${bgIdx * palette.swatchStep}_fg-${
+          fgIdx * palette.swatchStep
+        }`;
+        swatchFrame.layoutMode = 'VERTICAL';
+        swatchFrame.layoutSizingHorizontal = 'FIXED';
+        swatchFrame.layoutSizingVertical = 'FIXED';
+        swatchFrame.x = PALETTE_PX + bgIdx * (SWATCH_W + PALETTE_GX);
+        swatchFrame.y = PALETTE_PY + fgIdx * (SWATCH_H + PALETTE_GY);
+        swatchFrame.resize(SWATCH_W, SWATCH_H);
+        swatchFrame.fills =
+          colorSpace === 'DISPLAY_P3'
+            ? [
+                {
+                  type: 'SOLID',
+                  color: {
+                    r: palette.swatches[bgIdx].dispP3.r,
+                    g: palette.swatches[bgIdx].dispP3.g,
+                    b: palette.swatches[bgIdx].dispP3.b,
+                  },
+                },
+              ]
+            : [
+                {
+                  type: 'SOLID',
+                  color: {
+                    r: palette.swatches[bgIdx].sRgb.r,
+                    g: palette.swatches[bgIdx].sRgb.g,
+                    b: palette.swatches[bgIdx].sRgb.b,
+                  },
+                },
+              ];
+        const lightnessText = figma.createText();
+        swatchFrame.appendChild(lightnessText);
+        lightnessText.name = 'APCA Contrast';
+        lightnessText.fontName = { family: 'Roboto Condensed', style: 'Bold' };
+        lightnessText.fontSize = IDX_FONTSIZE;
+        lightnessText.lineHeight = { value: IDX_FONTSIZE, unit: 'PIXELS' };
+        lightnessText.characters = `${fg}`;
+        lightnessText.layoutPositioning = 'ABSOLUTE';
+        lightnessText.x = SWATCH_W * 0.5 - lightnessText.width * 0.5;
+        lightnessText.y = SWATCH_H * 0.5 - lightnessText.height * 0.5;
+        lightnessText.fills =
+          colorSpace === 'DISPLAY_P3'
+            ? [
+                {
+                  type: 'SOLID',
+                  color: {
+                    r: palette.swatches[fgIdx].dispP3.r,
+                    g: palette.swatches[fgIdx].dispP3.g,
+                    b: palette.swatches[fgIdx].dispP3.b,
+                  },
+                },
+              ]
+            : [
+                {
+                  type: 'SOLID',
+                  color: {
+                    r: palette.swatches[fgIdx].sRgb.r,
+                    g: palette.swatches[fgIdx].sRgb.g,
+                    b: palette.swatches[fgIdx].sRgb.b,
+                  },
+                },
+              ];
+      });
     });
 
     figma.currentPage.appendChild(paletteFrame);

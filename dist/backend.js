@@ -1,11 +1,11 @@
-const s = (_, t) => {
-  const a = (t.toString().split(".")[1] || "").length;
-  let T = Math.round(_ / t) * t;
-  return T = parseFloat(T.toFixed(a)), T;
+const i = (p, o) => {
+  const e = (o.toString().split(".")[1] || "").length;
+  let P = Math.round(p / o) * o;
+  return P = parseFloat(P.toFixed(e)), P;
 };
-let E = !1;
-const h = async () => {
-  E || (await figma.loadFontAsync({ family: "Roboto Mono", style: "Medium" }), await figma.loadFontAsync({ family: "Roboto Condensed", style: "Bold" }), E = !0);
+let m = !1;
+const d = async () => {
+  m || (await figma.loadFontAsync({ family: "Roboto Mono", style: "Medium" }), await figma.loadFontAsync({ family: "Roboto Condensed", style: "Bold" }), m = !0);
 };
 figma.showUI(__html__, {
   themeColors: !0,
@@ -13,92 +13,155 @@ figma.showUI(__html__, {
   height: 900
 });
 figma.ui.postMessage({ type: "size", width: 250, height: 900, px: 12 });
-const c = figma.root.documentColorProfile;
-figma.ui.postMessage({ type: "colorSpace", colorSpace: c });
-figma.ui.onmessage = async (_) => {
-  if (_.type === "create-palette") {
-    await h();
-    const t = _.palette, a = figma.createFrame();
-    a.name = `OKP-step${t.swatchStep}_l${s(
-      100 * t.peakLightness,
+const _ = figma.root.documentColorProfile;
+figma.ui.postMessage({ type: "colorSpace", colorSpace: _ });
+figma.ui.onmessage = async (p) => {
+  if (p.type === "create-palette" && "palette" in p) {
+    await d();
+    const o = p.palette, e = figma.createFrame();
+    e.name = `OKP-step${o.swatchStep}_l${i(
+      100 * o.peakLightness,
       1
-    )}_c${s(100 * t.peakChroma, 0.1)}_h${s(
-      t.hues.from,
+    )}_c${i(100 * o.peakChroma, 0.1)}_h${i(
+      o.hues.from,
       1
-    )}-${s(t.hues.to, 1)}`;
-    const { x: T, y: m } = figma.viewport.center;
-    a.x = T, a.y = m, a.resize(
-      2 * 48 + t.swatches.length * 200 + (t.swatches.length - 1) * 24,
+    )}-${i(o.hues.to, 1)}`;
+    const { x: P, y: T } = figma.viewport.center;
+    e.x = P, e.y = T, e.resize(
+      2 * 48 + o.swatches.length * 200 + (o.swatches.length - 1) * 24,
       2 * 48 + 200
-    ), a.fills = [
+    ), e.fills = [
       {
         type: "SOLID",
         color: { r: 1, g: 1, b: 1 }
       }
-    ], t.swatches.forEach((e, r) => {
-      const i = figma.createFrame();
-      a.appendChild(i), i.name = `Swatch-${r * t.swatchStep}`, i.layoutMode = "VERTICAL", i.layoutSizingHorizontal = "FIXED", i.layoutSizingVertical = "FIXED", i.x = 48 + r * 224, i.y = 48, i.resize(200, 200), i.fills = c === "DISPLAY_P3" ? [
+    ], o.swatches.forEach((a, E) => {
+      const l = figma.createFrame();
+      e.appendChild(l), l.name = `Swatch-${E * o.swatchStep}`, l.layoutMode = "VERTICAL", l.layoutSizingHorizontal = "FIXED", l.layoutSizingVertical = "FIXED", l.x = 48 + E * 224, l.y = 48, l.resize(200, 200), l.fills = _ === "DISPLAY_P3" ? [
         {
           type: "SOLID",
           color: {
-            r: e.dispP3.r,
-            g: e.dispP3.g,
-            b: e.dispP3.b
+            r: a.dispP3.r,
+            g: a.dispP3.g,
+            b: a.dispP3.b
           }
         }
       ] : [
         {
           type: "SOLID",
           color: {
-            r: e.sRgb.r,
-            g: e.sRgb.g,
-            b: e.sRgb.b
+            r: a.sRgb.r,
+            g: a.sRgb.g,
+            b: a.sRgb.b
           }
         }
       ];
-      const o = figma.createFrame();
-      i.appendChild(o), o.name = "info", o.layoutMode = "VERTICAL", o.layoutSizingHorizontal = "FILL", o.layoutSizingVertical = "FILL", o.paddingTop = 16, o.paddingBottom = 16, o.paddingLeft = 16, o.paddingRight = 16, o.itemSpacing = 4, o.fills = [];
-      const n = figma.createText();
-      i.appendChild(n), n.name = "#", n.fontName = { family: "Roboto Condensed", style: "Bold" }, n.fontSize = 56, n.lineHeight = { value: 56, unit: "PIXELS" }, n.characters = `${r * t.swatchStep}`, n.layoutPositioning = "ABSOLUTE", n.x = 200 - n.width + 12, n.y = 200 - n.height + 20, n.fills = [
+      const t = figma.createFrame();
+      l.appendChild(t), t.name = "info", t.layoutMode = "VERTICAL", t.layoutSizingHorizontal = "FILL", t.layoutSizingVertical = "FILL", t.paddingTop = 16, t.paddingBottom = 16, t.paddingLeft = 16, t.paddingRight = 16, t.itemSpacing = 4, t.fills = [];
+      const c = figma.createText();
+      l.appendChild(c), c.name = "#", c.fontName = { family: "Roboto Condensed", style: "Bold" }, c.fontSize = 56, c.lineHeight = { value: 56, unit: "PIXELS" }, c.characters = `${E * o.swatchStep}`, c.layoutPositioning = "ABSOLUTE", c.x = 200 - c.width + 12, c.y = 200 - c.height + 20, c.fills = [
         {
           type: "SOLID",
-          color: r < t.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
+          color: E < o.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
         }
       ];
+      const r = figma.createText();
+      t.appendChild(r);
+      let s;
+      _ === "DISPLAY_P3" && (s = figma.createText(), t.appendChild(s));
+      const n = figma.createText();
+      t.appendChild(n);
       const g = figma.createText();
-      o.appendChild(g);
-      let l;
-      c === "DISPLAY_P3" && (l = figma.createText(), o.appendChild(l));
-      const I = figma.createText();
-      o.appendChild(I);
-      const P = figma.createText();
-      o.appendChild(P), o.children.forEach((d) => {
-        if (d.type === "TEXT") {
-          const p = d;
-          p.fontName = { family: "Roboto Mono", style: "Medium" }, p.fontSize = 12, p.lineHeight = { value: 16, unit: "PIXELS" }, p.fills = [
+      t.appendChild(g), t.children.forEach((S) => {
+        if (S.type === "TEXT") {
+          const h = S;
+          h.fontName = { family: "Roboto Mono", style: "Medium" }, h.fontSize = 12, h.lineHeight = { value: 16, unit: "PIXELS" }, h.fills = [
             {
               type: "SOLID",
-              color: r < t.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
+              color: E < o.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
             }
           ];
         }
-      }), g.name = "oklch", g.characters = c === "DISPLAY_P3" ? `oklch(${s(
-        e.dispP3ClampedOklch.l,
+      }), r.name = "oklch", r.characters = _ === "DISPLAY_P3" ? `oklch(${i(
+        a.dispP3ClampedOklch.l,
         0.01
-      )} ${s(
-        e.dispP3ClampedOklch.c,
+      )} ${i(
+        a.dispP3ClampedOklch.c,
         1e-3
-      )} ${s(e.dispP3ClampedOklch.h, 1)})` : `oklch(${s(
-        e.sRgbClampedOklch.l,
+      )} ${i(a.dispP3ClampedOklch.h, 1)})` : `oklch(${i(
+        a.sRgbClampedOklch.l,
         0.01
-      )} ${s(e.sRgbClampedOklch.c, 1e-3)} ${s(
-        e.sRgbClampedOklch.h,
+      )} ${i(a.sRgbClampedOklch.c, 1e-3)} ${i(
+        a.sRgbClampedOklch.h,
         1
-      )})`, c === "DISPLAY_P3" && l && (l.name = "displayP3-rgb", l.fontName = { family: "Roboto Mono", style: "Medium" }, l.characters = `color(display-p3
-  ${s(e.dispP3.r, 1e-6)}
-  ${s(e.dispP3.g, 1e-6)}
-  ${s(e.dispP3.b, 1e-6)}
-)`), I.name = "hex", I.characters = `#${c === "DISPLAY_P3" ? e.dispP3Hex : e.sRgbHex}`, P.name = "gamut", P.characters = e.gamut;
-    }), figma.currentPage.appendChild(a);
+      )})`, _ === "DISPLAY_P3" && s && (s.name = "displayP3-rgb", s.fontName = { family: "Roboto Mono", style: "Medium" }, s.characters = `color(display-p3
+  ${i(a.dispP3.r, 1e-6)}
+  ${i(a.dispP3.g, 1e-6)}
+  ${i(a.dispP3.b, 1e-6)}
+)`), n.name = "hex", n.characters = `#${_ === "DISPLAY_P3" ? a.dispP3Hex : a.sRgbHex}`, g.name = "gamut", g.characters = a.gamut;
+    }), figma.currentPage.appendChild(e);
+  } else if (p.type === "create-matrix" && "apcaMatrix" in p) {
+    console.log("MATRIX"), await d();
+    const o = p.apcaMatrix, e = o.palette, P = o.matrix, T = figma.createFrame();
+    T.name = `OKP-matrix-step${e.swatchStep}_l${i(
+      100 * e.peakLightness,
+      1
+    )}_c${i(100 * e.peakChroma, 0.1)}_h${i(
+      e.hues.from,
+      1
+    )}-${i(e.hues.to, 1)}`;
+    const { x: a, y: E } = figma.viewport.center;
+    T.x = a + 200 + 2 * 48, T.y = E, T.resize(
+      2 * 48 + (100 / e.swatchStep + 1) * 200 + 100 / e.swatchStep * 24,
+      2 * 48 + +(100 / e.swatchStep + 1) * 200 + 100 / e.swatchStep * 24
+    ), T.fills = [
+      {
+        type: "SOLID",
+        color: { r: 1, g: 1, b: 1 }
+      }
+    ], P.forEach((l, t) => {
+      l.forEach((c, r) => {
+        const s = figma.createFrame();
+        T.appendChild(s), s.name = `bg-${t * e.swatchStep}_fg-${r * e.swatchStep}`, s.layoutMode = "VERTICAL", s.layoutSizingHorizontal = "FIXED", s.layoutSizingVertical = "FIXED", s.x = 48 + t * 224, s.y = 48 + r * 224, s.resize(200, 200), s.fills = _ === "DISPLAY_P3" ? [
+          {
+            type: "SOLID",
+            color: {
+              r: e.swatches[t].dispP3.r,
+              g: e.swatches[t].dispP3.g,
+              b: e.swatches[t].dispP3.b
+            }
+          }
+        ] : [
+          {
+            type: "SOLID",
+            color: {
+              r: e.swatches[t].sRgb.r,
+              g: e.swatches[t].sRgb.g,
+              b: e.swatches[t].sRgb.b
+            }
+          }
+        ];
+        const n = figma.createText();
+        s.appendChild(n), n.name = "APCA Contrast", n.fontName = { family: "Roboto Condensed", style: "Bold" }, n.fontSize = 56, n.lineHeight = { value: 56, unit: "PIXELS" }, n.characters = `${c}`, n.layoutPositioning = "ABSOLUTE", n.x = 200 * 0.5 - n.width * 0.5, n.y = 200 * 0.5 - n.height * 0.5, n.fills = _ === "DISPLAY_P3" ? [
+          {
+            type: "SOLID",
+            color: {
+              r: e.swatches[r].dispP3.r,
+              g: e.swatches[r].dispP3.g,
+              b: e.swatches[r].dispP3.b
+            }
+          }
+        ] : [
+          {
+            type: "SOLID",
+            color: {
+              r: e.swatches[r].sRgb.r,
+              g: e.swatches[r].sRgb.g,
+              b: e.swatches[r].sRgb.b
+            }
+          }
+        ];
+      });
+    }), figma.currentPage.appendChild(T);
   }
 };

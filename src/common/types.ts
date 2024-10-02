@@ -27,3 +27,8 @@ export type Palette = {
   hues: Hues;
   swatches: Swatch[];
 };
+
+export type ApcaMatrix = {
+  palette: Palette;
+  matrix: number[][];
+};
