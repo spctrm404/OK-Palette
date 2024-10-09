@@ -290,6 +290,7 @@ figma.ui.onmessage = async (msg: MsgType) => {
                   },
                 },
               ];
+        if (fg < 30 && fg > -30) swatchFrame.opacity = 0;
         const lightnessText = figma.createText();
         swatchFrame.appendChild(lightnessText);
         lightnessText.name = 'APCA Contrast';

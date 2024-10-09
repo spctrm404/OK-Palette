@@ -58,8 +58,8 @@ figma.ui.onmessage = async (p) => {
       ];
       const t = figma.createFrame();
       l.appendChild(t), t.name = "info", t.layoutMode = "VERTICAL", t.layoutSizingHorizontal = "FILL", t.layoutSizingVertical = "FILL", t.paddingTop = 16, t.paddingBottom = 16, t.paddingLeft = 16, t.paddingRight = 16, t.itemSpacing = 4, t.fills = [];
-      const c = figma.createText();
-      l.appendChild(c), c.name = "#", c.fontName = { family: "Roboto Condensed", style: "Bold" }, c.fontSize = 56, c.lineHeight = { value: 56, unit: "PIXELS" }, c.characters = `${E * o.swatchStep}`, c.layoutPositioning = "ABSOLUTE", c.x = 200 - c.width + 12, c.y = 200 - c.height + 20, c.fills = [
+      const n = figma.createText();
+      l.appendChild(n), n.name = "#", n.fontName = { family: "Roboto Condensed", style: "Bold" }, n.fontSize = 56, n.lineHeight = { value: 56, unit: "PIXELS" }, n.characters = `${E * o.swatchStep}`, n.layoutPositioning = "ABSOLUTE", n.x = 200 - n.width + 12, n.y = 200 - n.height + 20, n.fills = [
         {
           type: "SOLID",
           color: E < o.swatches.length / 2 ? { r: 1, g: 1, b: 1 } : { r: 0, g: 0, b: 0 }
@@ -69,8 +69,8 @@ figma.ui.onmessage = async (p) => {
       t.appendChild(r);
       let s;
       _ === "DISPLAY_P3" && (s = figma.createText(), t.appendChild(s));
-      const n = figma.createText();
-      t.appendChild(n);
+      const c = figma.createText();
+      t.appendChild(c);
       const g = figma.createText();
       t.appendChild(g), t.children.forEach((S) => {
         if (S.type === "TEXT") {
@@ -98,7 +98,7 @@ figma.ui.onmessage = async (p) => {
   ${i(a.dispP3.r, 1e-6)}
   ${i(a.dispP3.g, 1e-6)}
   ${i(a.dispP3.b, 1e-6)}
-)`), n.name = "hex", n.characters = `#${_ === "DISPLAY_P3" ? a.dispP3Hex : a.sRgbHex}`, g.name = "gamut", g.characters = a.gamut;
+)`), c.name = "hex", c.characters = `#${_ === "DISPLAY_P3" ? a.dispP3Hex : a.sRgbHex}`, g.name = "gamut", g.characters = a.gamut;
     }), figma.currentPage.appendChild(e);
   } else if (p.type === "create-matrix" && "apcaMatrix" in p) {
     console.log("MATRIX"), await d();
@@ -120,7 +120,7 @@ figma.ui.onmessage = async (p) => {
         color: { r: 1, g: 1, b: 1 }
       }
     ], P.forEach((l, t) => {
-      l.forEach((c, r) => {
+      l.forEach((n, r) => {
         const s = figma.createFrame();
         T.appendChild(s), s.name = `bg-${t * e.swatchStep}_fg-${r * e.swatchStep}`, s.layoutMode = "VERTICAL", s.layoutSizingHorizontal = "FIXED", s.layoutSizingVertical = "FIXED", s.x = 48 + t * 224, s.y = 48 + r * 224, s.resize(200, 200), s.fills = _ === "DISPLAY_P3" ? [
           {
@@ -140,9 +140,9 @@ figma.ui.onmessage = async (p) => {
               b: e.swatches[t].sRgb.b
             }
           }
-        ];
-        const n = figma.createText();
-        s.appendChild(n), n.name = "APCA Contrast", n.fontName = { family: "Roboto Condensed", style: "Bold" }, n.fontSize = 56, n.lineHeight = { value: 56, unit: "PIXELS" }, n.characters = `${c}`, n.layoutPositioning = "ABSOLUTE", n.x = 200 * 0.5 - n.width * 0.5, n.y = 200 * 0.5 - n.height * 0.5, n.fills = _ === "DISPLAY_P3" ? [
+        ], n < 30 && n > -30 && (s.opacity = 0);
+        const c = figma.createText();
+        s.appendChild(c), c.name = "APCA Contrast", c.fontName = { family: "Roboto Condensed", style: "Bold" }, c.fontSize = 56, c.lineHeight = { value: 56, unit: "PIXELS" }, c.characters = `${n}`, c.layoutPositioning = "ABSOLUTE", c.x = 200 * 0.5 - c.width * 0.5, c.y = 200 * 0.5 - c.height * 0.5, c.fills = _ === "DISPLAY_P3" ? [
           {
             type: "SOLID",
             color: {
