@@ -1,9 +1,8 @@
-import { useCallback, useContext } from 'react';
+import { useCallback } from 'react';
 import {
   Radio as AriaRadio,
   RadioGroup as AriaRadioGroup,
 } from 'react-aria-components';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import st from './_Radio.module.scss';
 import classNames from 'classnames/bind';
 

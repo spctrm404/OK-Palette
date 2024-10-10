@@ -3,7 +3,7 @@
   "id": "1418444633232614903",
   "api": "1.0.0",
   "editorType": ["figma"],
-  "main": "dist/backend.js",
+  "main": "dist/api.js",
   "ui": "dist/index.html",
   "capabilities": [],
   "enableProposedApi": false,

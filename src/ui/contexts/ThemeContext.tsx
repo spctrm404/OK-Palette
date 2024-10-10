@@ -1,20 +1,33 @@
-import { Hues } from '../../types/palette';
+import { Hues } from '../../types/paletteTypes';
 import {
-  THEME_PEAK_LIGHTNESS,
-  CHROMA_STEP,
+  Theme,
+  ThemeLightness,
+  TonalPaletteConfig,
+  ThemeContext as ThemeContextType,
+} from './ThemeContextTypes';
+import {
   LIGHTNESS_STEP,
+  CHROMA_STEP,
   HUE_STEP,
+  THEME_PEAK_LIGHTNESS,
   THEME_PEAK_CHROMA,
   THEME_SECONDARY_CHROMA_MULT,
+  THEME_TERTIARY_HUE_SHIFT,
+  THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
+  THEME_NEUTRAL_PEAK_CHROMA,
   THEME_WARNING_HUE,
   THEME_WARNING_PEAK_LIGHTNESS,
   THEME_WARNING_PEAK_CHROMA,
   THEME_ERROR_HUE,
   THEME_ERROR_PEAK_LIGHTNESS,
   THEME_ERROR_PEAK_CHROMA,
-  THEME_NEUTRAL_VARIANT_PEAK_CHROMA,
-  THEME_NEUTRAL_PEAK_CHROMA,
 } from '../../constants';
+import { quantize } from '../../utils/numberUtils';
+import {
+  replaceWordInCamelCase,
+  camelCaseToKebabCase,
+} from '../../utils/stringUtils';
+import { chromaForLightness, hueForLightness } from '../../utils/colourUtils';
 import {
   createContext,
   useCallback,
@@ -22,44 +35,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  chromaForLightness,
-  hueForLightness,
-  // peakChromaForLightnessAndHue,
-} from '../../utils/colour';
-import { quantize } from '../../utils/number';
-import {
-  replaceWordInCamelCase,
-  camelCaseToKebabCase,
-} from '../../utils/string';
 
-type ThemeLightness = {
-  [key: string]: { light: number; dark: number };
-};
-
-type ThemeTonalPaletteParam = {
-  [key: string]: {
-    reference: React.MutableRefObject<ThemeLightness>;
-    replacingName: boolean;
-    isDynamic: boolean;
-    peakChroma: number;
-    peakChromaMult: number;
-    peakLightness: number;
-    staticHue: number;
-    hueShift: number;
-  };
-};
-
-type ThemeContext = {
-  theme: 'light' | 'dark';
-  hues: Hues;
-  setTheme?: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
-  toggleTheme?: () => void;
-  setHues?: React.Dispatch<React.SetStateAction<Hues>>;
-  syncHues?: () => void;
-};
-
-export const ThemeContext = createContext<ThemeContext>({
+export const ThemeContext = createContext<ThemeContextType>({
   theme: 'light',
   hues: { from: 0, to: 0 },
 });
@@ -190,7 +167,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const tonalPaletteParams = useRef<ThemeTonalPaletteParam>({
+  const tonalPaletteConfigRef = useRef<TonalPaletteConfig>({
     primary: {
       reference: vividsLightnessRef,
       replacingName: true,
@@ -219,7 +196,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
       peakChromaMult: 1,
       peakLightness: THEME_PEAK_LIGHTNESS,
       staticHue: 0,
-      hueShift: 120,
+      hueShift: THEME_TERTIARY_HUE_SHIFT,
     },
     neutral: {
       reference: neutralsLightnessRef,
@@ -263,7 +240,7 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<Theme>('light');
   const [hues, setHues] = useState<Hues>({ from: 0, to: 0 });
 
   const toggleTheme = useCallback(() => {
@@ -280,45 +257,45 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const applyCssCustomProperties = useCallback(
     (targetDom: HTMLElement) => {
-      for (const [colorGroupName, colorGroupConfig] of Object.entries(
-        tonalPaletteParams.current
+      for (const [paletteGroupName, paletteConfig] of Object.entries(
+        tonalPaletteConfigRef.current
       )) {
-        const reference = colorGroupConfig.reference;
-        const replacingName = colorGroupConfig.replacingName;
-        const isDynamic = colorGroupConfig.isDynamic;
-        const peakChroma = colorGroupConfig.peakChroma;
-        const peakChromaMult = colorGroupConfig.peakChromaMult;
-        const peakLightness = colorGroupConfig.peakLightness;
-        const staticHue = colorGroupConfig.staticHue;
-        const hueShift = colorGroupConfig.hueShift;
-        Object.entries(reference.current).forEach(
-          ([roleName, lightnessConfig]) => {
-            let lightness = lightnessConfig[theme];
+        const {
+          reference,
+          replacingName,
+          isDynamic,
+          peakChroma,
+          peakChromaMult,
+          peakLightness,
+          staticHue,
+          hueShift,
+        } = paletteConfig;
+        Object.entries(reference.current).forEach(([name, themeLightness]) => {
+          let lightness = themeLightness[theme];
 
-            let chroma =
-              chromaForLightness(lightness, peakLightness, peakChroma) *
-              peakChromaMult;
-            chroma = quantize(chroma, CHROMA_STEP);
+          let chroma =
+            chromaForLightness(lightness, peakLightness, peakChroma) *
+            peakChromaMult;
+          chroma = quantize(chroma, CHROMA_STEP);
 
-            let hue =
-              (isDynamic ? hueForLightness(lightness, hues) : staticHue) +
-              hueShift;
-            hue = quantize(hue, HUE_STEP);
+          let hue =
+            (isDynamic ? hueForLightness(lightness, hues) : staticHue) +
+            hueShift;
+          hue = quantize(hue, HUE_STEP);
 
-            let propertyName = replacingName
-              ? replaceWordInCamelCase(roleName, 'name', colorGroupName)
-              : roleName;
-            propertyName = camelCaseToKebabCase(propertyName);
-            propertyName = `--${propertyName}`;
+          let propertyName = replacingName
+            ? replaceWordInCamelCase(name, 'name', paletteGroupName)
+            : name;
+          propertyName = camelCaseToKebabCase(propertyName);
+          propertyName = `--${propertyName}`;
 
-            lightness = quantize(lightness, LIGHTNESS_STEP);
+          lightness = quantize(lightness, LIGHTNESS_STEP);
 
-            targetDom.style.setProperty(
-              propertyName,
-              `oklch(${lightness} ${chroma} ${hue}deg)`
-            );
-          }
-        );
+          targetDom.style.setProperty(
+            propertyName,
+            `oklch(${lightness} ${chroma} ${hue}deg)`
+          );
+        });
       }
       targetDom.style.setProperty(
         '--shadow-0',

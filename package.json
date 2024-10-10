@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build-api": "vite build --config vite.config.api.ts",
-    "build-ui": "vite build --config vite.config.ui.ts",
-    "watch-api": "vite build --config vite.config.api.ts --watch",
-    "watch-ui": "vite build --config vite.config.ui.ts --watch",
+    "build:api": "vite build --config vite.config.api.ts",
+    "build:ui": "vite build --config vite.config.ui.ts",
+    "build": "npm run build:api && npm run build:ui",
+    "watch:api": "vite build --config vite.config.api.ts --watch",
+    "watch:ui": "vite build --config vite.config.ui.ts --watch",
+    "watch": "npm run watch:api && npm run watch:ui",
     "gen-license": "npx generate-license-file --input package.json --output THIRD_PARTY_LICENSES.txt"
   },
   "repository": {

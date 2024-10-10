@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import {
   mergeProps,
   MoveMoveEvent,
@@ -14,9 +8,8 @@ import {
   useMove,
   usePress,
 } from 'react-aria';
-import { XY } from '../../../common/types';
-import { clamp, quantize } from '../../../common/numberUtils';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { XY } from '../../../types/commonTypes';
+import { clamp, quantize } from '../../../utils/numberUtils';
 import st from './_XYSlider.module.scss';
 import classNames from 'classnames/bind';
 
@@ -44,8 +37,6 @@ const XYSlider = ({
   className = '',
   ...props
 }: XYSlliderProps) => {
-  const { theme } = useContext(ThemeContext);
-
   const [isDragging, setDragging] = useState(false);
   const [isFocused, setFocused] = useState(false);
 
@@ -337,7 +328,6 @@ const XYSlider = ({
     <div
       className={cx('xyslider', 'xyslider__root', className)}
       {...(isDisabled && { 'data-disabled': 'true' })}
-      data-theme={theme}
       style={
         {
           '--normalized-val-x': normalizedValue().x,

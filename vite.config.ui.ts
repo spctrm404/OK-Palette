@@ -6,6 +6,13 @@ import react from '@vitejs/plugin-react';
 import glsl from 'vite-plugin-glsl';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '~ui': resolve(__dirname, 'src', 'ui'),
+      '~types': resolve(__dirname, 'src', 'types'),
+      '~utils': resolve(__dirname, 'src', 'utils'),
+    },
+  },
   plugins: [viteSingleFile(), react(), glsl()],
   root: './src/ui',
   build: {

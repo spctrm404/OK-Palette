@@ -1,14 +1,14 @@
-import { FigmaDocumentColorSpace } from '../types/figma';
-import { XY } from '../types/common';
-import { Hues, PaletteParam } from '../types/palette';
+import { FigmaDocumentColorSpace } from '../types/figmaTypes';
+import { XY } from '../types/commonTypes';
+import { Hues, PaletteParam } from '../types/paletteTypes';
 import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
   HUE_STEP,
   DISP_P3_CHROMA_LIMIT,
 } from '../constants';
-import { quantize } from '../utils/number';
-import { createApcaMatrix, createPalette } from '../utils/colour';
+import { quantize } from '../utils/numberUtils';
+import { createApcaMatrix, createPalette } from '../utils/colourUtils';
 import {
   useCallback,
   useContext,
@@ -62,11 +62,6 @@ type Action =
       }>;
     }
   | {
-      type: 'setHues';
-      payload: Hues;
-      value: {};
-    }
-  | {
       type: 'toggleBoolean';
       payload: keyof Pick<
         State,
@@ -81,6 +76,20 @@ type Action =
           'isHueRanged' | 'showDetail' | 'createApcaTable'
         >;
         value: boolean;
+      };
+    }
+  | {
+      type: 'setHues';
+      payload: {
+        from: number;
+        to: number;
+      };
+    }
+  | {
+      type: 'setHue';
+      payload: {
+        field: keyof Hues;
+        value: number;
       };
     };
 
@@ -106,14 +115,6 @@ function App() {
           (acc, { field, value }) => ({ ...acc, [field]: value }),
           state
         );
-      case 'setHues':
-        return {
-          ...state,
-          hues: {
-            from: action.payload.from,
-            to: action.payload.to,
-          },
-        };
       case 'toggleBoolean':
         return {
           ...state,
@@ -123,6 +124,19 @@ function App() {
         return {
           ...state,
           [action.payload.field]: action.payload.value,
+        };
+      case 'setHues':
+        return {
+          ...state,
+          hues: action.payload,
+        };
+      case 'setHue':
+        return {
+          ...state,
+          hues: {
+            ...state.hues,
+            [action.payload.field]: action.payload.value,
+          },
         };
 
       default:
@@ -141,8 +155,7 @@ function App() {
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [documentColorSpace, setDocumentColorSpace] =
-    useState<FigmaDocumentColorSpace>('LEGACY');
+  const [documentColorSpace] = useState<FigmaDocumentColorSpace>('LEGACY');
 
   const sendMsg = () => {
     console.log('state', state);
@@ -200,14 +213,20 @@ function App() {
   }, []);
   const onChangeHueFromHandler = useCallback((newNumber: number) => {
     dispatch({
-      type: 'setHues',
-      payload: {from: newNumber, to:  };
+      type: 'setHue',
+      payload: {
+        field: 'from',
+        value: newNumber,
+      },
     });
   }, []);
   const onChangeHueToHandler = useCallback((newNumber: number) => {
     dispatch({
-      type: 'setHues',
-      payload: { to: newNumber, },
+      type: 'setHue',
+      payload: {
+        field: 'to',
+        value: newNumber,
+      },
     });
   }, []);
   const onChangeSwatchStepHandler = useCallback((newString: string) => {
@@ -217,36 +236,36 @@ function App() {
     });
   }, []);
 
-  useLayoutEffect(() => {
-    const messageHandler = (event: MessageEvent) => {
-      const { type, ...msg } = event.data.pluginMessage;
+  // useLayoutEffect(() => {
+  //   const messageHandler = (event: MessageEvent) => {
+  //     const { type, ...msg } = event.data.pluginMessage;
 
-      if (type === 'colorSpace') {
-        setDocumentColorSpace(msg.colorSpace);
-      } else if (type === 'size') {
-        const root = document.documentElement;
-        root.style.setProperty('--width', `${msg.width}`);
-        root.style.setProperty('--height', `${msg.height}`);
-        root.style.setProperty('--px', `${msg.px}`);
-      }
-    };
-    window.addEventListener('message', messageHandler);
+  //     if (type === 'colorSpace') {
+  //       setDocumentColorSpace(msg.colorSpace);
+  //     } else if (type === 'size') {
+  //       const root = document.documentElement;
+  //       root.style.setProperty('--width', `${msg.width}`);
+  //       root.style.setProperty('--height', `${msg.height}`);
+  //       root.style.setProperty('--px', `${msg.px}`);
+  //     }
+  //   };
+  //   window.addEventListener('message', messageHandler);
 
-    return () => {
-      window.removeEventListener('message', messageHandler);
-    };
-  }, []);
-  useLayoutEffect(() => {
-    if (!state.isHueRanged) {
-      dispatch({
-        type: 'setNumber',
-        payload: { field: 'hueTo', value: state.hueFrom },
-      });
-    }
-  }, [state.isHueRanged, state.hueFrom]);
-  useLayoutEffect(() => {
-    setHues?.({ from: state.hueFrom, to: state.hueTo });
-  }, [state.hueFrom, state.hueTo]);
+  //   return () => window.removeEventListener('message', messageHandler);
+  // }, []);
+  // useLayoutEffect(() => {
+  //   if (!state.isHueRanged)
+  //     dispatch({
+  //       type: 'setHue',
+  //       payload: {
+  //         field: 'to',
+  //         value: state.hues.from,
+  //       },
+  //     });
+  // }, [state.isHueRanged, state.hues.from]);
+  // useLayoutEffect(() => {
+  //   setHues?.(state.hues);
+  // }, [state.hues]);
 
   const hueRangedId = useId();
   const hueFromId = useId();
@@ -258,7 +277,7 @@ function App() {
 
   return (
     <>
-      <div className={cx('section', 'doc-color')}>
+      {/* <div className={cx('section', 'doc-color')}>
         <div className={cx('label', 'doc-color__label')}>
           Document's Color Space:
         </div>
@@ -286,7 +305,7 @@ function App() {
           <Slider
             aria-labelledby={hueFromId}
             className={cx('h__slider', 'h__slider--from')}
-            value={state.hueFrom}
+            value={state.hues.from}
             minValue={0}
             maxValue={360}
             step={HUE_STEP}
@@ -297,7 +316,7 @@ function App() {
             aria-labelledby={hueToId}
             className={cx('h__slider', 'h__slider--to')}
             isDisabled={!state.isHueRanged}
-            value={state.hueTo}
+            value={state.hues.to}
             minValue={0}
             maxValue={360}
             step={HUE_STEP}
@@ -321,7 +340,7 @@ function App() {
             <NumberField
               aria-labelledby={hueFromId}
               className={cx('h__number-field', 'h__number-field--from')}
-              value={state.hueFrom}
+              value={state.hues.from}
               minValue={0}
               maxValue={360}
               step={HUE_STEP}
@@ -337,7 +356,7 @@ function App() {
               aria-labelledby={hueToId}
               className={cx('h__number-field', 'h__number-field--to')}
               isDisabled={!state.isHueRanged}
-              value={state.hueTo}
+              value={state.hues.to}
               minValue={0}
               maxValue={360}
               step={HUE_STEP}
@@ -358,7 +377,7 @@ function App() {
             documentColorSpace={documentColorSpace}
             peakLightness={state.peakLightness}
             peakChroma={state.peakLightness}
-            hues={{ from: state.hueFrom, to: state.hueTo }}
+            hues={state.hues}
           />
           <XYSlider
             aria-labelledby={lcId}
@@ -472,7 +491,7 @@ function App() {
           />
         </div>
       </div>
-      <div className={cx('divider')}></div>
+      <div className={cx('divider')}></div> */}
       <div className={cx('section', 'button')}>
         <div className={cx('part', 'button__part')}>
           {/* <IconButton

@@ -1,4 +1,5 @@
-import { DocumentColorSpace, Hues } from '../../../common/types';
+import { FigmaDocumentColorSpace } from '../../../types/figmaTypes';
+import { Hues } from '../../../types/paletteTypes';
 import { useRef, useEffect } from 'react';
 import vertex from './vertex.glsl';
 import fragment from './fragment.glsl';
@@ -8,7 +9,7 @@ import classNames from 'classnames/bind';
 const cx = classNames.bind(st);
 
 type WebGlProps = {
-  documentColorSpace: DocumentColorSpace;
+  documentColorSpace: FigmaDocumentColorSpace;
   peakLightness: number;
   peakChroma: number;
   hues: Hues;

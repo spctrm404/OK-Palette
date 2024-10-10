@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./node_modules/@figma"],
+    "baseUrl": ".",
+    "paths": {
+      "~api/*": ["src/api/*"],
+      "~types/*": ["src/types/*"],
+      "~utils/*": ["src/utils/*"],
+      "~ui/*": ["src/ui/*"]
+    }
+  },
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.ui.json" },
+    { "path": "./tsconfig.api.json" }
+  ]
+}

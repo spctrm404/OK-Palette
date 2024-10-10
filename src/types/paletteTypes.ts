@@ -1,4 +1,4 @@
-import { RGB, LCH } from './colour';
+import { RGB, LCH } from './colourTypes';
 
 export type Hues = {
   from: number;

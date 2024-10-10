@@ -1,12 +1,12 @@
-import { RGB, LCH, CuloriOklch } from '../types/colour';
+import { RGB, LCH, CuloriOklch } from '../types/colourTypes';
 import {
   Hues,
   PaletteParam,
   Palette,
   Swatch,
   ApcaMatrix,
-} from '../types/palette';
-import { FigmaDocumentColorSpace } from '../types/figma';
+} from '../types/paletteTypes';
+import { FigmaDocumentColorSpace } from '../types/figmaTypes';
 
 import {
   LIGHTNESS_STEP,
@@ -15,7 +15,7 @@ import {
   DISP_P3_CHROMA_LIMIT,
 } from '../constants';
 
-import { quantize } from './number';
+import { quantize } from './numberUtils';
 
 import { inGamut, converter, clampChroma } from 'culori';
 import { APCAcontrast, displayP3toY, sRGBtoY } from 'apca-w3';
