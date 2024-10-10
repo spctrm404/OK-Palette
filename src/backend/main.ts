@@ -1,11 +1,11 @@
-import { Swatch, Palette, ApcaMatrix } from '../common/types';
+import { Palette, ApcaMatrix } from '../types/palette';
 import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
   HUE_STEP,
   RGB_FLOAT_PRECISION,
-} from '../common/constants';
-import { quantize } from '../common/numberUtils';
+} from '../constants';
+import { quantize } from '../utils/number';
 
 const PX = 12;
 const WIDTH = 250;
@@ -27,6 +27,7 @@ const IDX_OFFSET_X = 12;
 const IDX_OFFSET_Y = 20;
 
 let isFontLoaded = false;
+
 const ensureFontLoaded = async () => {
   if (!isFontLoaded) {
     await figma.loadFontAsync({ family: 'Roboto Mono', style: 'Medium' });
@@ -40,6 +41,7 @@ figma.showUI(__html__, {
   width: WIDTH + 2 * PX,
   height: HEIGHT,
 });
+
 figma.ui.postMessage({ type: 'size', width: WIDTH, height: HEIGHT, px: PX });
 
 const colorSpace = figma.root.documentColorProfile;
@@ -186,19 +188,16 @@ figma.ui.onmessage = async (msg: MsgType) => {
       okLChText.characters =
         colorSpace === 'DISPLAY_P3'
           ? `oklch(${quantize(
-              aSwatch.dispP3ClampedOklch.l,
+              aSwatch.dispP3Oklch.l,
               LIGHTNESS_STEP
-            )} ${quantize(
-              aSwatch.dispP3ClampedOklch.c,
-              CHROMA_STEP
-            )} ${quantize(aSwatch.dispP3ClampedOklch.h, HUE_STEP)})`
-          : `oklch(${quantize(
-              aSwatch.sRgbClampedOklch.l,
-              LIGHTNESS_STEP
-            )} ${quantize(aSwatch.sRgbClampedOklch.c, CHROMA_STEP)} ${quantize(
-              aSwatch.sRgbClampedOklch.h,
+            )} ${quantize(aSwatch.dispP3Oklch.c, CHROMA_STEP)} ${quantize(
+              aSwatch.dispP3Oklch.h,
               HUE_STEP
-            )})`;
+            )})`
+          : `oklch(${quantize(aSwatch.sRgbOklch.l, LIGHTNESS_STEP)} ${quantize(
+              aSwatch.sRgbOklch.c,
+              CHROMA_STEP
+            )} ${quantize(aSwatch.sRgbOklch.h, HUE_STEP)})`;
 
       if (colorSpace === 'DISPLAY_P3' && p3RGBText) {
         p3RGBText.name = 'displayP3-rgb';

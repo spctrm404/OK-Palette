@@ -1,23 +1,26 @@
-import { Hues, Swatch, Palette, DocumentColorSpace, ApcaMatrix } from './types';
+import { RGB, LCH, CuloriOklch } from '../types/colour';
+import {
+  Hues,
+  PaletteParam,
+  Palette,
+  Swatch,
+  ApcaMatrix,
+} from '../types/palette';
+import { FigmaDocumentColorSpace } from '../types/figma';
+
 import {
   LIGHTNESS_STEP,
   CHROMA_STEP,
   HUE_STEP,
   DISP_P3_CHROMA_LIMIT,
-} from './constants';
+} from '../constants';
+
+import { quantize } from './number';
+
 import { inGamut, converter, clampChroma } from 'culori';
-import { quantize } from './numberUtils';
 import { APCAcontrast, displayP3toY, sRGBtoY } from 'apca-w3';
 
-export const nomalRgbToHex = ({
-  r,
-  g,
-  b,
-}: {
-  r: number;
-  g: number;
-  b: number;
-}): string =>
+export const nomalizedRgbToHex = ({ r, g, b }: RGB): string =>
   [r, g, b]
     .map((value) =>
       Math.round(value * 255)
@@ -61,12 +64,12 @@ export const peakChromaForLightnessAndHue = (
   const inDispP3 = inGamut('p3');
   while (high - low > CHROMA_STEP) {
     const mid = (low + high) / 2;
-    const oklch = {
+    const oklch: CuloriOklch = {
       mode: 'oklch',
       l: peakLightness,
       c: mid,
       h: hue,
-    } as const;
+    };
     const isDispP3 = inDispP3(oklch);
     if (isDispP3) {
       low = mid; // chroma can be higher
@@ -79,7 +82,7 @@ export const peakChromaForLightnessAndHue = (
 
 export const peakChromaAndLightnessForHue = () => {
   const inP3 = inGamut('p3');
-  const list: { hue: number; lightness: number; chroma: number }[] = [];
+  const list: LCH[] = [];
   for (let hue = 0; hue <= 360; hue += HUE_STEP) {
     let maxChromaForHue = 0;
     let correspondingLightness = 0;
@@ -90,16 +93,14 @@ export const peakChromaAndLightnessForHue = () => {
         chroma <= DISP_P3_CHROMA_LIMIT;
         chroma += CHROMA_STEP
       ) {
-        const oklch = {
+        const oklch: CuloriOklch = {
           mode: 'oklch',
           l: lightness,
           c: chroma,
           h: hue,
-        } as const;
+        };
         if (inP3(oklch)) {
-          if (chroma > maxChromaForLightness) {
-            maxChromaForLightness = chroma;
-          }
+          if (chroma > maxChromaForLightness) maxChromaForLightness = chroma;
         } else {
           break;
         }
@@ -112,21 +113,21 @@ export const peakChromaAndLightnessForHue = () => {
       }
     }
     list.push({
-      hue,
-      lightness: correspondingLightness,
-      chroma: maxChromaForHue,
+      l: correspondingLightness,
+      c: maxChromaForHue,
+      h: hue,
     });
   }
 
   return list;
 };
 
-export const createPalette = (
-  swatchStep: number,
-  peakLightness: number,
-  peakChroma: number,
-  hues: Hues
-): Palette => {
+export const createPalette = ({
+  swatchStep,
+  peakLightness,
+  peakChroma,
+  hues,
+}: PaletteParam): Palette => {
   const total = 100 / swatchStep + 1;
   const swatches: Swatch[] = [];
   const inDispP3 = inGamut('p3');
@@ -140,49 +141,53 @@ export const createPalette = (
       CHROMA_STEP
     );
     const hue = hueForLightness(lightness, hues);
-    const oklch = {
-      mode: 'oklch',
-      l: lightness,
-      c: chroma,
-      h: hue,
-    } as const;
+
     if (lightness === 0) {
       swatches.push({
-        dispP3ClampedOklch: oklch,
+        oklch: { l: 0, c: 0, h: hue },
+        dispP3Oklch: { l: 0, c: 0, h: hue },
         dispP3: { r: 0, g: 0, b: 0 },
         dispP3Hex: '000000',
-        sRgbClampedOklch: oklch,
+        sRgbOklch: { l: 0, c: 0, h: hue },
         sRgb: { r: 0, g: 0, b: 0 },
         sRgbHex: '000000',
         gamut: 'sRGB',
       });
     } else if (lightness === 1) {
       swatches.push({
-        dispP3ClampedOklch: oklch,
+        oklch: { l: 1, c: 0, h: hue },
+        dispP3Oklch: { l: 1, c: 0, h: hue },
         dispP3: { r: 1, g: 1, b: 1 },
         dispP3Hex: 'FFFFFF',
-        sRgbClampedOklch: oklch,
+        sRgbOklch: { l: 1, c: 0, h: hue },
         sRgb: { r: 1, g: 1, b: 1 },
         sRgbHex: 'FFFFFF',
         gamut: 'sRGB',
       });
     } else {
+      const oklch: CuloriOklch = {
+        mode: 'oklch',
+        l: lightness,
+        c: chroma,
+        h: hue,
+      };
       const isDispP3 = inDispP3(oklch);
       const isSRgb = inSRgb(oklch);
-      const dispP3ClampedOklch = clampChroma(oklch, 'oklch', 'p3');
-      const dispP3 = toDispP3(dispP3ClampedOklch);
-      const dispP3Hex = nomalRgbToHex(dispP3);
-      const sRgbClampedOklch = clampChroma(oklch, 'oklch', 'rgb');
-      const sRgb = toSRgb(sRgbClampedOklch);
-      const sRgbHex = nomalRgbToHex(sRgb);
+      const dispP3Oklch = clampChroma(oklch, 'oklch', 'p3');
+      const dispP3 = toDispP3(dispP3Oklch);
+      const dispP3Hex = nomalizedRgbToHex(dispP3);
+      const sRgbOklch = clampChroma(oklch, 'oklch', 'rgb');
+      const sRgb = toSRgb(sRgbOklch);
+      const sRgbHex = nomalizedRgbToHex(sRgb);
       swatches.push({
-        dispP3ClampedOklch,
+        oklch,
+        dispP3Oklch,
         dispP3,
         dispP3Hex,
-        sRgbClampedOklch,
+        sRgbOklch,
         sRgb,
         sRgbHex,
-        gamut: isSRgb ? 'sRGB' : 'Display P3',
+        gamut: isSRgb ? 'sRGB' : isDispP3 ? 'Display P3' : 'Out of Display P3',
       });
     }
   }
@@ -1999,9 +2004,9 @@ export const LightnessAndChromaPeaksOfHues = [
 ];
 
 export const calculateApcaScore = (
-  { r: fgR, g: fgG, b: fgB }: { r: number; g: number; b: number },
-  { r: bgR, g: bgG, b: bgB }: { r: number; g: number; b: number },
-  colorSpace: DocumentColorSpace
+  { r: fgR, g: fgG, b: fgB }: RGB,
+  { r: bgR, g: bgG, b: bgB }: RGB,
+  colorSpace: FigmaDocumentColorSpace
 ): number => {
   if (colorSpace === 'DISPLAY_P3') {
     const fgY = displayP3toY([fgR, fgG, fgB]);
@@ -2018,13 +2023,13 @@ export const calculateApcaScore = (
 
 export const createApcaMatrix = (
   palette: Palette,
-  colorspace: DocumentColorSpace
+  colorspace: FigmaDocumentColorSpace
 ): ApcaMatrix => {
   const matrix: number[][] = [];
   const swatches = palette.swatches;
-  swatches.forEach((bg, idx) => {
+  swatches.forEach((bg) => {
     const column: number[] = [];
-    swatches.forEach((fg, idx) => {
+    swatches.forEach((fg) => {
       column.push(
         calculateApcaScore(
           colorspace == 'DISPLAY_P3' ? bg.dispP3 : bg.sRgb,

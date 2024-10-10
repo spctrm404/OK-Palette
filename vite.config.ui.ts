@@ -1,16 +1,17 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import fs from 'fs';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 import react from '@vitejs/plugin-react';
 import glsl from 'vite-plugin-glsl';
-import { viteSingleFile } from 'vite-plugin-singlefile';
 
 export default defineConfig({
-  plugins: [react(), glsl(), viteSingleFile()],
+  plugins: [viteSingleFile(), react(), glsl()],
   root: './src/ui',
   build: {
-    outDir: resolve(__dirname, 'dist'),
     emptyOutDir: false,
+    outDir: resolve(__dirname, 'dist'),
+    target: 'es2015',
     rollupOptions: {
       output: {
         plugins: [
@@ -18,13 +19,12 @@ export default defineConfig({
             name: 'copy-to-root',
             writeBundle({ dir }, bundle) {
               const rootOutputDir = resolve(__dirname, '.');
-              if (dir)
-                for (const fileName in bundle) {
-                  const filePath = resolve(dir, fileName);
-                  const destPath = resolve(rootOutputDir, fileName);
-                  fs.copyFileSync(filePath, destPath);
-                  console.log(`Copied ${fileName} to root directory.`);
-                }
+              for (const fileName in bundle) {
+                const filePath = resolve(dir as string, fileName);
+                const destPath = resolve(rootOutputDir, fileName);
+                fs.copyFileSync(filePath, destPath);
+                console.log(`Copied ${fileName} to root directory.`);
+              }
             },
           },
         ],

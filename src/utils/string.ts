@@ -4,9 +4,9 @@ export const formatNumDigits = (
   floatLength: number
 ): string => {
   const [intPart, floatPart] = num.toFixed(floatLength).split('.');
-  const paddedInt = intPart.padStart(intLength, '0');
-  return `${intLength > 0 ? paddedInt : intLength < 0 ? intPart : ``}${
-    floatLength > 0 ? `.${floatPart}` : ``
+  const paddedInt = intPart ? intPart.padStart(intLength, '0') : '0';
+  return `${intLength > 0 ? paddedInt : intLength < 0 ? intPart : ''}${
+    floatLength > 0 ? `.${floatPart}` : ''
   }`;
 };
 

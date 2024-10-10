@@ -1,4 +1,14 @@
-import { DocumentColorSpace, XY } from '../common/types';
+import { FigmaDocumentColorSpace } from '../types/figma';
+import { XY } from '../types/common';
+import { Hues, PaletteParam } from '../types/palette';
+import {
+  LIGHTNESS_STEP,
+  CHROMA_STEP,
+  HUE_STEP,
+  DISP_P3_CHROMA_LIMIT,
+} from '../constants';
+import { quantize } from '../utils/number';
+import { createApcaMatrix, createPalette } from '../utils/colour';
 import {
   useCallback,
   useContext,
@@ -9,13 +19,6 @@ import {
   useLayoutEffect,
   useId,
 } from 'react';
-import {
-  LIGHTNESS_STEP,
-  CHROMA_STEP,
-  HUE_STEP,
-  DISP_P3_CHROMA_LIMIT,
-} from '../common/constants';
-import { createApcaMatrix, createPalette } from '../common/colour';
 import { ThemeContext } from './contexts/ThemeContext';
 import Button from './components/Button/Button';
 import IconButton from './components/IconButton/IconButton';
@@ -28,28 +31,22 @@ import WebGl from './components/WebGl/WebGl';
 import XYSlider from './components/XYSlider/XYSlider';
 import st from './_App.module.scss';
 import classNames from 'classnames/bind';
-import { quantize } from '../common/numberUtils';
 
 const cx = classNames.bind(st);
 
-type PaletteParam = {
-  swatchStep: number;
-  peakLightness: number;
-  peakChroma: number;
+type State = {
   isHueRanged: boolean;
-  hueFrom: number;
-  hueTo: number;
   showDetail: boolean;
   createApcaTable: boolean;
-};
+} & PaletteParam;
 
-type PaletteAction =
+type Action =
   | {
       type: 'setNumber';
       payload: {
         field: keyof Omit<
-          PaletteParam,
-          'isHueRanged' | 'showDetail' | 'createApcaTable'
+          State,
+          'isHueRanged' | 'showDetail' | 'createApcaTable' | 'hues'
         >;
         value: number;
       };
@@ -58,16 +55,21 @@ type PaletteAction =
       type: 'setNumbers';
       payload: Array<{
         field: keyof Omit<
-          PaletteParam,
-          'isHueRanged' | 'showDetail' | 'createApcaTable'
+          State,
+          'isHueRanged' | 'showDetail' | 'createApcaTable' | 'hues'
         >;
         value: number;
       }>;
     }
   | {
+      type: 'setHues';
+      payload: Hues;
+      value: {};
+    }
+  | {
       type: 'toggleBoolean';
       payload: keyof Pick<
-        PaletteParam,
+        State,
         'isHueRanged' | 'showDetail' | 'createApcaTable'
       >;
     }
@@ -75,7 +77,7 @@ type PaletteAction =
       type: 'setBoolean';
       payload: {
         field: keyof Pick<
-          PaletteParam,
+          State,
           'isHueRanged' | 'showDetail' | 'createApcaTable'
         >;
         value: boolean;
@@ -92,85 +94,81 @@ function App() {
     { uid: 'radioItemsRef_10', value: '10', text: '10' },
   ]);
 
-  const reducer = (
-    paletteState: PaletteParam,
-    paletteAction: PaletteAction
-  ): PaletteParam => {
-    switch (paletteAction.type) {
+  const reducer = (state: State, action: Action): State => {
+    switch (action.type) {
       case 'setNumber':
         return {
-          ...paletteState,
-          [paletteAction.payload.field]: paletteAction.payload.value,
+          ...state,
+          [action.payload.field]: action.payload.value,
         };
       case 'setNumbers':
-        return paletteAction.payload.reduce(
+        return action.payload.reduce(
           (acc, { field, value }) => ({ ...acc, [field]: value }),
-          paletteState
+          state
         );
+      case 'setHues':
+        return {
+          ...state,
+          hues: {
+            from: action.payload.from,
+            to: action.payload.to,
+          },
+        };
       case 'toggleBoolean':
         return {
-          ...paletteState,
-          [paletteAction.payload]: !paletteState[paletteAction.payload],
+          ...state,
+          [action.payload]: !state[action.payload],
         };
       case 'setBoolean':
         return {
-          ...paletteState,
-          [paletteAction.payload.field]: paletteAction.payload.value,
+          ...state,
+          [action.payload.field]: action.payload.value,
         };
+
       default:
         throw new Error('Unknown action type');
     }
   };
 
-  const initialState: PaletteParam = {
+  const initialState: State = {
     swatchStep: 10,
     peakLightness: 0.5,
     peakChroma: 0.11,
     isHueRanged: false,
-    hueFrom: 0,
-    hueTo: 0,
+    hues: { from: 0, to: 0 },
     showDetail: true,
     createApcaTable: false,
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const [documentColorSpace, setDocumentColorSpace] =
-    useState<DocumentColorSpace>('LEGACY');
+    useState<FigmaDocumentColorSpace>('LEGACY');
 
   const sendMsg = () => {
-    console.log('lightnessStep', state.swatchStep);
-    console.log('peakLightness', state.peakLightness);
-    console.log('peakChroma', state.peakChroma);
-    console.log('hueFrom', state.hueFrom);
-    console.log('hueTo', state.hueTo);
-    const palette = createPalette(
-      state.swatchStep,
-      state.peakLightness,
-      state.peakChroma,
-      {
-        from: state.hueFrom,
-        to: state.hueTo,
-      }
-    );
-    const apcaMatrix = createApcaMatrix(palette, documentColorSpace);
-    // parent.postMessage(
-    //   {
-    //     pluginMessage: {
-    //       type: 'create-palette',
-    //       palette,
-    //     },
-    //   },
-    //   '*'
-    // );
-    parent.postMessage(
-      {
-        pluginMessage: {
-          type: 'create-matrix',
-          apcaMatrix,
+    console.log('state', state);
+    const palette = createPalette(state);
+    if (state.createApcaTable) {
+      const apcaMatrix = createApcaMatrix(palette, documentColorSpace);
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'create-matrix',
+            apcaMatrix,
+          },
         },
-      },
-      '*'
-    );
+        '*'
+      );
+    } else {
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'create-palette',
+            palette,
+          },
+        },
+        '*'
+      );
+    }
   };
 
   const onChangeLightnessAndChromaHandler = useCallback(({ x, y }: XY) => {
@@ -202,14 +200,14 @@ function App() {
   }, []);
   const onChangeHueFromHandler = useCallback((newNumber: number) => {
     dispatch({
-      type: 'setNumber',
-      payload: { field: 'hueFrom', value: newNumber },
+      type: 'setHues',
+      payload: {from: newNumber, to:  };
     });
   }, []);
   const onChangeHueToHandler = useCallback((newNumber: number) => {
     dispatch({
-      type: 'setNumber',
-      payload: { field: 'hueTo', value: newNumber },
+      type: 'setHues',
+      payload: { to: newNumber, },
     });
   }, []);
   const onChangeSwatchStepHandler = useCallback((newString: string) => {
